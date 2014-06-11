@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en" ng-app="phonecatApp">
+<!-- html tag contains 'ng-app' naming of app as 'phonecatApp' to be ref'd later -->
+<head>
+  <meta charset="utf-8">
+  <title>Google Phone Gallery</title>
+  <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css">
+  <link rel="stylesheet" href="css/app.css">
+  <link rel="stylesheet" href="css/animations.css">
+<!-- css formatting stylesheets point to 
+how to handle layout of different components -->
+  <script src="bower_components/jquery/jquery.js"></script>
+  <script src="bower_components/angular/angular.js"></script>
+  <script src="bower_components/angular-animate/angular-animate.js"></script>
+  <script src="bower_components/angular-route/angular-route.js"></script>
+  <script src="bower_components/angular-resource/angular-resource.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/animations.js"></script>
+  <script src="js/controllers.js"></script>
+  <script src="js/filters.js"></script>
+  <script src="js/services.js"></script>
+  <!-- these script tags load all of the various 
+  javascript files which will be referenced/utilized -->
+</head>
+<body>
+
+  <div class="view-container">
+  <!--  imports a formatting class for magic from animations.css?? -->
+    <div ng-view class="view-frame"></div>
+    <!-- brings in an ng-view class 'view-frame' 
+    ... animations.css shows the setup of subcomponents 
+    of this class but not its original definition -->
+  </div>
+
+</body>
+</html>
