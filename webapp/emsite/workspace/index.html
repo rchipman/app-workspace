@@ -11,106 +11,33 @@
       <link rel="stylesheet" href="css/dashboard.css">
       <link rel="stylesheet" href="css/main.css">
 
-      <script src="js/vendor/modernizr-2.6.2-respond-1.1.0.min.js"></script>
+      <script src="js/vendor/modernizr/modernizr-2.6.2-respond-1.1.0.min.js"></script>
   </head>
 
-  <body>
+  <body ng-app="Workspace">
 
-    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
-      <div class="container-fluid">
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-            <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a class="navbar-brand" href="#">Project name</a>
-        </div>
-        <div class="navbar-collapse collapse">
-          <ul class="nav navbar-nav navbar-right">
-            <li><a href="#">Dashboard</a></li>
-            <li><a href="#">Settings</a></li>
-            <li><a href="#">Profile</a></li>
-            <li><a href="#">Help</a></li>
-          </ul>
-          <form class="navbar-form navbar-right">
-            <input type="text" class="form-control" placeholder="Search...">
-          </form>
-        </div>
-      </div>
-    </div>
+    <div ng-view></div>
 
-    <div class="container-fluid">
-      <div class="row">
-        <div class="col-sm-3 col-md-2 sidebar">
-          <ul class="nav nav-sidebar">
-            <li class="active">
-              <a href="#">Top Level</a>
-              <ul class="nav nav-sidebar">
-                <li><a href="#">Second Level</a></li>
-                <li><a href="#">Second Level</a></li>
-                <li><a href="#">Second Level</a></li>
-                <li><a href="#">Second Level</a></li>
-              </ul>
-            </li>
-            <li><a href="#">Top Level</a></li>
-            <li><a href="#">Top Level</a></li>
-            <li><a href="#">Top Level</a></li>
-          </ul>
-        </div>
-        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-          <h1 class="page-header">Dashboard</h1>
+    <div ng-controller="DashboardCtrl">
 
-          <ul class="assets">
-            <li class="asset">
-              <span class="asset-title">Ttile</span>
-              <img src="http://demo.entermediasoftware.com/emshare/views/modules/asset/downloads/preview/thumb/By+Type/photos/Puppy.jpg/thumb.jpg" alt="" />
-            </li>
-            <li class="asset">
-              <span class="asset-title">Ttile</span>
-              <img src="http://demo.entermediasoftware.com/emshare/views/modules/asset/downloads/preview/thumb/By+Type/photos/Puppy.jpg/thumb.jpg" alt="" />
-            </li>
-            <li class="asset">
-              <span class="asset-title">Ttile</span>
-              <img src="http://demo.entermediasoftware.com/emshare/views/modules/asset/downloads/preview/thumb/By+Type/photos/Puppy.jpg/thumb.jpg" alt="" />
-            </li>
-            <li class="asset">
-              <span class="asset-title">Ttile</span>
-              <img src="http://demo.entermediasoftware.com/emshare/views/modules/asset/downloads/preview/thumb/By+Type/photos/Puppy.jpg/thumb.jpg" alt="" />
-            </li>
-            <li class="asset">
-              <span class="asset-title">Ttile</span>
-              <img src="http://demo.entermediasoftware.com/emshare/views/modules/asset/downloads/preview/thumb/By+Type/photos/Puppy.jpg/thumb.jpg" alt="" />
-            </li>
-            <li class="asset">
-              <span class="asset-title">Ttile</span>
-              <img src="http://demo.entermediasoftware.com/emshare/views/modules/asset/downloads/preview/thumb/By+Type/photos/Puppy.jpg/thumb.jpg" alt="" />
-            </li>
-            <li class="asset">
-              <span class="asset-title">Ttile</span>
-              <img src="http://demo.entermediasoftware.com/emshare/views/modules/asset/downloads/preview/thumb/By+Type/photos/Puppy.jpg/thumb.jpg" alt="" />
-            </li>
-            <li class="asset">
-              <span class="asset-title">Ttile</span>
-              <img src="http://demo.entermediasoftware.com/emshare/views/modules/asset/downloads/preview/thumb/By+Type/photos/Puppy.jpg/thumb.jpg" alt="" />
-            </li>
-            <li class="asset">
-              <span class="asset-title">Ttile</span>
-              <img src="http://demo.entermediasoftware.com/emshare/views/modules/asset/downloads/preview/thumb/By+Type/photos/Puppy.jpg/thumb.jpg" alt="" />
-            </li>
-          </ul>
+      {{test}}
 
-        </div>
-      </div>
+      <input type="text" ng-model="testModifier" />
+
+      <button class="btn btn-primary" ng-click="testChangeButton(testModifier)">Click to change the output!</button>
+      <button class="btn btn-primary" ng-click="testChangeButton()">Click to change the output without the modifier!</button>
+
+
     </div>
 
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-    <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.11.0.min.js"><\/script>')</script>
-    <script src="js/vendor/bootstrap.min.js"></script>
+    <script>window.jQuery || document.write('<script src="js/vendor/jquery/jquery-1.11.0.min.js"><\/script>')</script>
+    <script src="js/vendor/bootstrap/bootstrap.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.18/angular.min.js"></script>
+    <script src="js/vendor/angular/ui-router/ui-router-0.2.10.js"></script>
     <script src="js/main.js"></script>
   </body>
 </html>
