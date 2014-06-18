@@ -25,5 +25,8 @@
 }
 */
 body {
-    padding: 10px !important;   
+    padding: 10px !important;
+}
+.main {
+    padding-top: 70px;
 }
