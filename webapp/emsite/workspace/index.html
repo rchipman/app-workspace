@@ -1,57 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
-<!-- copy the header from the example to see if this fixes my errors
-  <head>
-      <meta charset="utf-8">
-      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-      <title></title>
-      <meta name="description" content="">
-      <meta name="viewport" content="width=device-width, initial-scale=1">
 
-      <link rel="stylesheet" href="css/bootstrap.css">
-      <link rel="stylesheet" href="css/dashboard.css">
-      <link rel="stylesheet" href="css/main.css">
-
-      <script src="js/vendor/modernizr/modernizr-2.6.2-respond-1.1.0.min.js"></script>
-  </head>
--->
 <head>
-    <script data-require="angular.js@*" data-semver="1.2.0-rc3-nonmin" src="http://code.angularjs.org/1.2.0-rc.3/angular.js"></script>
-    <script data-require="ng-table@*" data-semver="0.3.1" src="http://bazalt-cms.com/assets/ng-table/0.3.1/ng-table.js"></script>
-    
-    <link data-require="ng-table@*" data-semver="0.3.1" rel="stylesheet" href="http://bazalt-cms.com/assets/ng-table/0.3.1/ng-table.css" />
-    <link data-require="bootstrap-css@*" data-semver="3.0.0" rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" />
-    
-    <!--  paste in this stuff from above -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>EnterMedia Workspaces</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
     <link rel="stylesheet" href="css/bootstrap.css">
     <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="js/vendor/angular/ng-table/ng-table.min.css">
     <link rel="stylesheet" href="css/main.css">
     
-	<!--  fix this to refer to main.js instead of script.js -->
-    <script src="main.js"></script>
+    <script src="js/vendor/modernizr/modernizr-2.6.2-respond-1.1.0.min.js"></script>
     
 </head>
-<!--  it changed something to update the header, but didn't make it work as intended -->
 
-  <body ng-app="Workspace" ng-controller="collabTable">
-
-	  
-    <!-- disable this to play with tables
-    
-     <div ng-controller="DashboardCtrl">
-
-      {{test}}
-
-      <input type="text" ng-model="testModifier" />
-
-      <button class="btn btn-primary" ng-click="testChangeButton(testModifier)">Click to change the output!</button>
-      <button class="btn btn-primary" ng-click="testChangeButton()">Click to change the output without the modifier!</button>
-
-
-    </div> -->
-    
-    <!--  the following is all more or less a direct copy of the example, 
-    only differences are changing the variable name in the ng-repeat and adding elements to table-->
+  <body ng-app="Workspace">
+  
+    <div ng-controller="collabTable">
     
     <button ng-click="tableParams.sorting({})" class="btn btn-default pull-right">Clear sorting</button>
     <p><strong>Sorting:</strong> {{tableParams.sorting()|json}}
@@ -80,17 +48,17 @@
             </td>
         </tr>
     </table>
+    </div>
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-    <!--  maybe double including is happening and breaking it??
+ 
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
     <script>window.jQuery || document.write('<script src="js/vendor/jquery/jquery-1.11.0.min.js"><\/script>')</script>
     <script src="js/vendor/bootstrap/bootstrap.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.18/angular.min.js"></script>
     <script src="js/vendor/angular/ui-router/ui-router-0.2.10.js"></script>
+    <script src="js/vendor/angular/ng-table/ng-table.min.js"></script>
     <script src="js/main.js"></script>
-    <script src="bower_components/ng-table/ng-table.min.js"><</script>
-    NOPE, nothing changed at all since changing header -->
   </body>
 </html>
