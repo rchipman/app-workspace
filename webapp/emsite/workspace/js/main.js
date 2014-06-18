@@ -15,24 +15,46 @@ em = (function() {
 
 Workspace = angular.module('Workspace', ['ui.router', 'ngTable']);
 
-Workspace.config;
-
-[
-  '$locationProvider', '$httpProvider', '$stateProvider', '$urlRouterProvider', function($locationProvider, $httpProvider, $stateProvider, $urlRouterProvider) {
-    return $stateProvider.state('app', {
-      abstract: true,
-      template: '<div ui-view></div>'
-    }).state('app.dashboard', {
-      url: '/:test',
-      templateUrl: '/partials/dashboard/dashboard.tpl.html',
-      controller: 'DashboardCtrl'
-    }).state('app.collaboration', {
-      url: '/collaboration/:id',
-      templateUrl: '/partials/collaboration/collaboration-details.tpl.html',
-      controller: 'CollaboartionCtrl'
-    });
+Workspace.run([
+  '$rootScope', '$state', '$stateParams', function($rootScope, $state, $stateParams) {
+    $rootScope.$state = $state;
+    $rootScope.$stateParams = $stateParams;
+    return em.unit;
   }
-];
+]);
+
+Workspace.config([
+  '$stateProvider', '$urlRouterProvider', function($stateProvider, $urlRouterProvider) {
+    $stateProvider.state('app', {
+      abstract: true,
+      views: {
+        'mainMenu': {
+          templateUrl: 'partials/navigation/main-menu.tpl.html'
+        },
+        'sidebar': {
+          templateUrl: 'partials/navigation/sidebar.tpl.html'
+        }
+      }
+    }).state('app.dashboard', {
+      url: '/',
+      views: {
+        'mainContentArea@': {
+          templateUrl: 'partials/dashboard/dashboard.tpl.html',
+          controller: 'DashboardCtrl'
+        }
+      }
+    }).state('app.collaborations', {
+      url: '/collaborations/:id',
+      views: {
+        'mainContentArea@': {
+          templateUrl: 'partials/collaborations/collaborations.tpl.html',
+          controller: 'CollaborationCtrl'
+        }
+      }
+    });
+    return em.unit;
+  }
+]);
 
 Workspace.controller('DashboardCtrl', [
   '$scope', function($scope) {
@@ -47,7 +69,7 @@ Workspace.controller('DashboardCtrl', [
   }
 ]);
 
-Workspace.controller('collabTable', [
+Workspace.controller('CollaborationCtrl', [
   '$scope', '$filter', 'ngTableParams', function($scope, $filter, ngTableParams) {
     var data;
     data = [
