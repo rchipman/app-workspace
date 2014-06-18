@@ -12,15 +12,15 @@
     <link rel="stylesheet" href="css/dashboard.css">
     <link rel="stylesheet" href="js/vendor/angular/ng-table/ng-table.min.css">
     <link rel="stylesheet" href="css/main.css">
-    
+
     <script src="js/vendor/modernizr/modernizr-2.6.2-respond-1.1.0.min.js"></script>
-    
+
 </head>
 
   <body ng-app="Workspace">
-  
+
     <div ng-controller="collabTable">
-    
+
     <button ng-click="tableParams.sorting({})" class="btn btn-default pull-right">Clear sorting</button>
     <p><strong>Sorting:</strong> {{tableParams.sorting()|json}}
     <!--  p tag doesn't need a closing element??? -->
@@ -34,7 +34,7 @@
             <td data-title="'Project'" sortable="'project'">
                 {{element.project}}
             </td>
-            <td data-title="'Collaboration'" sortable="'collaboration'">
+            <td data-title="'Collaboration'" sortable="'collab'">
                 {{element.collab}}
             </td>
             <td data-title="'Owner'" sortable="'owner'">
@@ -43,7 +43,7 @@
             <td data-title="'Approval'" sortable="'approval'">
                 {{element.approval}}
             </td>
-            <td data-title="'Last Updated'" sortable="'last update'">
+            <td data-title="'Last Updated'" sortable="'last'">
                 {{element.last}}
             </td>
         </tr>
@@ -52,7 +52,7 @@
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
- 
+
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
     <script>window.jQuery || document.write('<script src="js/vendor/jquery/jquery-1.11.0.min.js"><\/script>')</script>
     <script src="js/vendor/bootstrap/bootstrap.min.js"></script>
