@@ -3,7 +3,7 @@
 /* ==========================================================================
    Author's custom styles
    ========================================================================== */
-
+/*
 .asset {
   margin: 0;
   padding: 0;
@@ -22,4 +22,8 @@
 
 .nav-sidebar > li > .nav-sidebar > li > a {
   padding-left: 60px;
+}
+*/
+body {
+    padding: 10px !important;   
 }

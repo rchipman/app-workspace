@@ -1,43 +1,64 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-      <meta charset="utf-8">
-      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-      <title></title>
-      <meta name="description" content="">
-      <meta name="viewport" content="width=device-width, initial-scale=1">
 
-      <link rel="stylesheet" href="css/bootstrap.css">
-      <link rel="stylesheet" href="css/dashboard.css">
-      <link rel="stylesheet" href="css/main.css">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>EnterMedia Workspaces</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-      <script src="js/vendor/modernizr/modernizr-2.6.2-respond-1.1.0.min.js"></script>
-  </head>
+    <link rel="stylesheet" href="css/bootstrap.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="js/vendor/angular/ng-table/ng-table.min.css">
+    <link rel="stylesheet" href="css/main.css">
+    
+    <script src="js/vendor/modernizr/modernizr-2.6.2-respond-1.1.0.min.js"></script>
+    
+</head>
 
   <body ng-app="Workspace">
+  
+    <div ng-controller="collabTable">
+    
+    <button ng-click="tableParams.sorting({})" class="btn btn-default pull-right">Clear sorting</button>
+    <p><strong>Sorting:</strong> {{tableParams.sorting()|json}}
+    <!--  p tag doesn't need a closing element??? -->
 
-    <div ng-view></div>
-
-    <div ng-controller="DashboardCtrl">
-
-      {{test}}
-
-      <input type="text" ng-model="testModifier" />
-
-      <button class="btn btn-primary" ng-click="testChangeButton(testModifier)">Click to change the output!</button>
-      <button class="btn btn-primary" ng-click="testChangeButton()">Click to change the output without the modifier!</button>
-
-
+    <table ng-table="tableParams" class="table">
+    <!-- this should be grabbing the data attribute of the tableParams from $scope -->
+        <tr ng-repeat="element in $data">
+            <td data-title="'ID'" sortable="'id'">
+                {{element.id}}
+            </td>
+            <td data-title="'Project'" sortable="'project'">
+                {{element.project}}
+            </td>
+            <td data-title="'Collaboration'" sortable="'collaboration'">
+                {{element.collab}}
+            </td>
+            <td data-title="'Owner'" sortable="'owner'">
+                {{element.owner}}
+            </td>
+            <td data-title="'Approval'" sortable="'approval'">
+                {{element.approval}}
+            </td>
+            <td data-title="'Last Updated'" sortable="'last update'">
+                {{element.last}}
+            </td>
+        </tr>
+    </table>
     </div>
-
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
+ 
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
     <script>window.jQuery || document.write('<script src="js/vendor/jquery/jquery-1.11.0.min.js"><\/script>')</script>
     <script src="js/vendor/bootstrap/bootstrap.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.18/angular.min.js"></script>
     <script src="js/vendor/angular/ui-router/ui-router-0.2.10.js"></script>
+    <script src="js/vendor/angular/ng-table/ng-table.min.js"></script>
     <script src="js/main.js"></script>
   </body>
 </html>
