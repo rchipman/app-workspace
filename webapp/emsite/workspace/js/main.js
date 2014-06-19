@@ -44,11 +44,35 @@ Workspace.config([
         }
       }
     }).state('app.collaborations', {
-      url: '/collaborations/:id',
+      url: '/collaborations',
       views: {
         'mainContentArea@': {
           templateUrl: 'partials/collaborations/collaborations.tpl.html',
           controller: 'CollaborationCtrl'
+        }
+      }
+    }).state('app.collaborations.details', {
+      url: '/:collaborationID',
+      views: {
+        'mainContentArea@': {
+          templateUrl: 'partials/collaborations/collaboration-details.tpl.html',
+          controller: 'CollaborationDetailsCtrl'
+        }
+      }
+    }).state('app.projects', {
+      url: '/projects',
+      views: {
+        'mainContentArea@': {
+          templateUrl: 'partials/projects/projects.tpl.html',
+          controller: 'ProjectCtrl'
+        }
+      }
+    }).state('app.projects.details', {
+      url: '/:projectID',
+      views: {
+        'mainContentArea@': {
+          templateUrl: 'partials/projects/project-details.tpl.html',
+          controller: 'ProjectDetailsCtrl'
         }
       }
     });
@@ -56,61 +80,4 @@ Workspace.config([
   }
 ]);
 
-Workspace.controller('DashboardCtrl', [
-  '$scope', function($scope) {
-    $scope.testChangeButton = function(text) {
-      if (!text) {
-        text = 'now test is this!';
-      }
-      $scope.test = text;
-      return em.unit;
-    };
-    return em.unit;
-  }
-]);
 
-Workspace.controller('CollaborationCtrl', [
-  '$scope', '$filter', 'ngTableParams', function($scope, $filter, ngTableParams) {
-    var data;
-    data = [
-      {
-        id: '47',
-        project: 'July 2014',
-        collab: 'Cover page Belize',
-        owner: 'Shane Sandefur',
-        approval: '3/5',
-        last: '6/7/14'
-      }, {
-        id: '48',
-        project: 'July 2014',
-        collab: 'zCover page Belize',
-        owner: 'Shane Sandefur',
-        approval: '3/5',
-        last: '6/7/14'
-      }, {
-        id: '49',
-        project: 'July 2014',
-        collab: 'aCover page Belize',
-        owner: 'Shane Sandefur',
-        approval: '3/5',
-        last: '6/7/14'
-      }
-    ];
-    $scope.tableParams = new ngTableParams({
-      page: 1,
-      count: 5,
-      sorting: {
-        id: 'asc'
-      }
-    }, {
-      total: data.length,
-      getData: function($defer, params) {
-        var orderedData;
-        orderedData = params.sorting() ? $filter('orderBy')(data, params.orderBy()) : data;
-        $defer.resolve(orderedData.slice((params.page() - 1) * params.count(), params.page() * params.count()));
-        return em.unit;
-      }
-    });
-    return em.unit;
-  }
-]);
