@@ -1,7 +1,7 @@
 Workspace.controller 'ProjectCtrl', 
-['$scope', '$stateParams', 'collaborationService',
-($scope, $stateParams, collaborationService) ->
-    $scope.currentProject = _.find collaborationService.mockData, 
+['$scope', '$stateParams', 'annotationService',
+($scope, $stateParams, annotationService) ->
+    $scope.currentProject = _.find annotationService.mockData, 
     (item) ->
     	item.project.id == $stateParams.projectID;
     

@@ -21,11 +21,7 @@ label {
 #bd-wrapper {
   min-width: 1500px;
 }
-#annotation_canvas
-{
-  width: 800px;
-height: 600px;
-}
+
 .outsideWrapper{ 
     width:256px; height:256px; 
     margin:20px 60px; 
@@ -33,7 +29,7 @@ height: 600px;
 .insideWrapper{ 
     width:100%; height:100%; 
     position:relative;}
-.XcoveredImage{ 
+.coveredImage{ 
     width:100%; height:100%; 
     position:absolute; top:0px; left:0px;
 }
