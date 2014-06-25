@@ -43,20 +43,20 @@ Workspace.config([
           controller: 'DashboardCtrl'
         }
       }
-    }).state('app.collaborations', {
-      url: '/collaborations',
+    }).state('app.annotations', {
+      url: '/annotations',
       views: {
         'mainContentArea@': {
-          templateUrl: 'partials/collaborations/collaborations.tpl.html',
-          controller: 'CollaborationCtrl'
+          templateUrl: 'partials/annotations/annotations.tpl.html',
+          controller: 'AnnotationCtrl'
         }
       }
-    }).state('app.collaborations.details', {
-      url: '/:collaborationID',
+    }).state('app.annotations.details', {
+      url: '/:annotationID',
       views: {
         'mainContentArea@': {
-          templateUrl: 'partials/collaborations/collaboration-details.tpl.html',
-          controller: 'CollaborationDetailsCtrl'
+          templateUrl: 'partials/annotations/annotation-details.tpl.html',
+          controller: 'AnnotationDetailsCtrl'
         }
       }
     }).state('app.projects', {
