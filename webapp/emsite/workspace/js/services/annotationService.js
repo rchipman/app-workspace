@@ -14,7 +14,7 @@ Workspace.factory('annotationService', function () {
     createTime: '05/04/2014 14:33:56',
     lastUpdateTime: '05/06/2014 06:30:23',
     owner: 'Bob Dole',
-    path: 'img/Baseball-Player.jpg'
+    path: 'img/ForMom.jpg'
     }
   },
   {
@@ -31,7 +31,7 @@ Workspace.factory('annotationService', function () {
     createTime: '05/14/2014 14:36:56',
     lastUpdateTime: '06/06/2014 06:30:23',
     owner: 'Bob Dole',
-    path: 'img/Baseball-Player.jpg'
+    path: 'img/FenceDog.jpg'
     }
   },
   {
@@ -48,7 +48,7 @@ Workspace.factory('annotationService', function () {
     createTime: '05/04/1987 14:33:56',
     lastUpdateTime: '05/06/1999 06:30:23',
     owner: 'Bobette Dole',
-    path: 'img/Baseball-Player.jpg'
+    path: 'img/TigerTug.jpg'
     }
   },
   {
@@ -65,7 +65,7 @@ Workspace.factory('annotationService', function () {
     createTime: '01/04/2011 14:33:56',
     lastUpdateTime: '05/14/2014 15:31:23',
     owner: 'Fred Dole',
-    path: 'img/Baseball-Player.jpg'
+    path: 'img/BlueBus.jpg'
     }
   }
   ]
