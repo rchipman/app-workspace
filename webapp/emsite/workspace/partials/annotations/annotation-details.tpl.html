@@ -1,18 +1,11 @@
 <a ui-sref="app.annotations">Back to Annotations</a>
-{{currentAnnotation}}
 
 <!-- fabric formatting stuff... probably does not belong here -->
 
 <div id="bd-wrapper">
     <h2><span>Annotation Workspace</span></h2>
-    {{currentAnnotation}}
 
     <canvas class="coveredImage" id="annotation_canvas" width="800" height="600" style="border:1px solid #aaa"></canvas>
-    <!--<div class="outsideWrapper">
-    	<div class="insideWrapper">
-
-    	</div>
-	</div>-->
 
     <ul>
         <li><strong>Events:</strong></li>
@@ -24,7 +17,6 @@
         <br>
         <button id="clear-canvas" class="btn btn-info">Clear</button>
         <br>
-        <!-- add new button to create image flattening -->
         <button id="image-to-json" class="btn btn-info">Canvas to JSON</button>
         <br>
         <button id="zoom-tool" class="btn btn-info">Zoom:</button>
