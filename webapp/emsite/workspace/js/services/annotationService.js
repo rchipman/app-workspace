@@ -2,11 +2,11 @@ Workspace.factory('annotationService', function () {
   var data = [
   {
   project:{
-    id: 57,
+    id: 1,
     name: "Bad Project"
   },
   annotation:{
-    id: 5,
+    id: 101,
     name: "Stupid art",
     description: "This is my fifth child's bad art",
     status: 'Done',
@@ -19,11 +19,11 @@ Workspace.factory('annotationService', function () {
   },
   {
   project:{
-    id: 7,
+    id: 2,
     name: "Good Project"
   },
   annotation:{
-    id: 57,
+    id: 102,
     name: "Nice art",
     description: "This is my fourth child's good art",
     status: 'Done',
@@ -36,11 +36,11 @@ Workspace.factory('annotationService', function () {
   },
   {
   project:{
-    id: 14,
+    id: 3,
     name: "Great Project"
   },
   annotation:{
-    id: 67,
+    id: 103,
     name: "Great art",
     description: "This is my first child's amazing art",
     status: 'Done',
@@ -53,11 +53,11 @@ Workspace.factory('annotationService', function () {
   },
   {
   project:{
-    id: 13,
+    id: 4,
     name: "Unknown Project"
   },
   annotation:{
-    id: 89,
+    id: 104,
     name: "Maybe art",
     description: "This is my second child's interpretive pseudo art project",
     status: 'In Progress',
