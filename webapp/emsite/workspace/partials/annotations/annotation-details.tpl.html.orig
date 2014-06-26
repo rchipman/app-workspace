@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!-- fabric formatting stuff... probably does not belong here -->
 
     <ul class="annotations-toolbar">
@@ -21,6 +22,20 @@
             <span class="icon glyphicon glyphicon-ok"></span>
             <span class="additional-info">{{rejected.length}}</span>
             </li>
+=======
+<a ui-sref="app.annotations">Back to Annotations</a>
+
+<!-- fabric formatting stuff... probably does not belong here -->
+
+<div id="bd-wrapper">
+    <h2><span>Annotation Workspace</span></h2>
+
+    <canvas class="coveredImage" id="annotation_canvas" width="800" height="600" style="border:1px solid #aaa"></canvas>
+
+    <ul>
+        <li><strong>Events:</strong></li>
+        <li ng-repeat="event in events">{{event.id}}: {{event.text}}</li>
+>>>>>>> upstream/ws-4
     </ul>
     <div class="row">
         <div class="col-md-9">
