@@ -1,12 +1,10 @@
 <a ui-sref="app.annotations">Back to Annotations</a>
-{{currentAnnotation}} {{currentAnnotation.annotation.path}}
+{{currentAnnotation}}
 
-<!-- Fabric experiment below
-	weird that it doesn't include the angular controller
-	or the canvas tag css, the wrappers are odd-->
+<!-- fabric formatting stuff... probably does not belong here -->
 
 <div id="bd-wrapper">
-    <h2><span>Annotation Canvas</span> &middot; Test phase</h2>
+    <h2><span>Annotation Workspace</span></h2>
     {{currentAnnotation}}
 
     <canvas class="coveredImage" id="annotation_canvas" width="800" height="600" style="border:1px solid #aaa"></canvas>
@@ -35,20 +33,20 @@
             <select id="drawing-mode-selector">
                 <option>Pencil</option>
                 <option>Circle</option>
-                <option>Spray</option>
-                <option>Pattern</option>
+            </select>
+            <br>
 
-                <option>hline</option>
-                <option>vline</option>
-                <option>square</option>
-                <option>diamond</option>
-                <option>texture</option>
+            <label for="shape-mode-selector">Shapes:</label>
+            <select id="shape-mode-selector" value="Circle">
+            	<option>Circle</option>
+            	<option>Rectangle</option>
             </select>
             <br>
 
             <label for="drawing-line-width">Line width:</label>
-            <span class="info">30</span>
-            <input type="range" value="30" min="0" max="150" id="drawing-line-width">
+            <span class="info">5</span>
+            <!-- I don't think this even worked... ? -->
+            <input type="range" value="5" min="0" max="150" id="drawing-line-width">
             <br>
 
             <label for="drawing-color">Line color:</label>
@@ -70,12 +68,41 @@
             <br>
         </div>
     </div>
+</div>
 
-    <!-- test angular output-->
-    <p>
-        <img src='{{currentAnnotation.annotation.path}}'></img>
-    </p>
-    {{currentAnnotation.annotation.path}}
-    <!-- /test -->
-
+<!-- doesn't really work but placeholder I guess... apparently this table should be below the canvas-->
+<div>
+	Collection assets
+    <div><input type="text" ng-model="tableFilter"></div>
+    <button ng-click="tableParams.sorting({})" class="btn btn-default pull-right">Clear sorting</button>
+    <p><strong>Sorting:</strong> {{tableParams.sorting()|json}}</p>
+    <table ng-table="tableParams" class="table">
+        <!-- this should be grabbing the data attribute of the tableParams from $scope -->
+        <tr ng-repeat="element in $data | filter: tableFilter">
+          <td data-title="'Updates'" sortable="'annotation.hasRecentActivity'">
+              <span ng-if="element.annotation.hasRecentActivity">New Notes!</span>
+          </td>
+          <td data-title="'Project'" sortable="'project.name'">
+              <a ui-sref="app.projects.details({projectID: element.project.id})">{{element.project.name}}</a>
+          </td>
+          <td data-title="'Annotation'" sortable="'annotation.name'">
+              <a ui-sref="app.annotations.details({annotationID: element.annotation.id})">{{element.annotation.name}}</a>
+          </td>
+          <td data-title="'Description'" sortable="'annotation.description'">
+              <a ui-sref="app.annotations.details({annotationID: element.annotation.id})">{{element.annotation.description}}</a>
+          </td>
+          <td data-title="'Owner'" sortable="'annotation.owner'">
+              <!-- maybe later use ID for linking to profiles -->
+              {{element.annotation.owner}}
+          </td>
+          <td data-title="'Status'" sortable="'annotation.status'">
+              {{element.annotation.status}}
+          </td>
+          <td data-title="'Created'" sortable="'annotation.createTime'">
+              {{element.annotation.createTime}}
+          </td>
+          <td data-title="'Updated'" sortable="'annotation.lastUpdateTime'">
+              {{element.annotation.lastUpdateTime}}
+          </td></tr>
+    </table>
 </div>

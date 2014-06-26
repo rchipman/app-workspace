@@ -2,11 +2,13 @@ Workspace.controller('AnnotationDetailsCtrl', [
   '$scope', '$stateParams', '$timeout', 'annotationService', 'fabricJsService', function($scope, $stateParams, $timeout, annotationService, fabricJsService) {
     var usefulKeys;
     $scope.annotations = [];
+    // events attribute holds information about the unique event
     $scope.events = [];
     usefulKeys = [''];
     $scope.currentAnnotation = _.find(annotationService.mockData, function(item) {
       return item.annotation.id === parseInt($stateParams.annotationID);
     });
+    // uses init function to create the fabric environment
     $scope.fabric = fabricJsService.init($scope.currentAnnotation.annotation.path);
     $scope.eventIndex = 0;
     $scope.annotationAction = null;
@@ -19,6 +21,7 @@ Workspace.controller('AnnotationDetailsCtrl', [
       return em.unit;
     });
     $scope.fabric.canvas.on('mouse:up', function(e) {
+      console.log(e);
       $scope.annotationAction = $timeout(function() {
         $scope.events.push({
           id: $scope.eventIndex++,
@@ -32,14 +35,17 @@ Workspace.controller('AnnotationDetailsCtrl', [
         $scope.currentAnnotationGroup = [];
         $scope.$apply();
         return em.unit;
-      }, 1000);
+      }, 3000);
       return em.unit;
     });
     $scope.fabric.canvas.on('object:added', function(obj) {
+      // this logic seems slightly recursive
+      // circles are being placed more often than expected
       var circle;
       circle = new fabric.Circle({
-        radius: Math.floor(Math.random() * 99) + 1,
-        fill: "rgba(" + (Math.floor(Math.random() * 255) + 1) + ", " + (Math.floor(Math.random() * 255) + 1) + ", " + (Math.floor(Math.random() * 255) + 1) + ", 1)"
+        radius: 10,
+        fill: "",
+        stroke: "rgba(" + (Math.floor(Math.random() * 255) + 1) + ", " + (Math.floor(Math.random() * 255) + 1) + ", " + (Math.floor(Math.random() * 255) + 1) + ", 1)",
       });
       console.log(circle);
       $scope.currentAnnotationGroup.push(circle);

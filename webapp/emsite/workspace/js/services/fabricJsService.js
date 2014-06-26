@@ -1,9 +1,23 @@
 Workspace.factory('fabricJsService', function() {
   return {
     init: function(path) {
-      var returnCanvas;
-      returnCanvas = {};
-      
+        var returnCanvas;
+        var mouseDown, origX, origY, shape, currentShape, shapeSpec
+        currentShape = fabric.Circle;
+        shapeSpec = {                 // set up properties for the current shape outside of the function
+                        radius: 1,
+                        strokeWidth: 5,
+                        stroke: 'red',
+                        selectable: false,
+                        fill: "",
+                        originX: 'center',
+                        originY: 'center'
+                    }
+        // don't like this, but it works for now, keeping track of Mouse status outside
+        // of the event handlers will make it easier to use timeouts, but it feels dirty
+
+        returnCanvas = {};
+
         (function () {
             var $ = function (id) {
                 return document.getElementById(id)
@@ -29,6 +43,46 @@ Workspace.factory('fabricJsService', function() {
                 canvas.clear()
             };
 
+            // let's see if we can make a toolbar selector to pick circles and rectangles
+            
+            $('shape-mode-selector').onchange = function() {
+
+                // for now, sloppily make instructions for what the drawing handlers should do
+
+                if (this.value == "Circle") {
+                    currentShape = fabric.Circle;
+                    shapeSpec = {
+                        radius: 1,
+                        strokeWidth: 5,
+                        stroke: 'red',
+                        selectable: false,
+                        fill: "",
+                        originX: 'center',
+                        originY: 'center'
+                    }
+                }
+                else if (this.value == "Rectangle") {
+                    currentShape = fabric.Rect;
+                    shapeSpec = {                 // set up properties for the current shape outside of the function
+                        height: 1,
+                        width: 1,
+                        strokeWidth: 5,
+                        stroke: 'red',
+                        selectable: false,
+                        fill: "",
+                        originX: 'center',
+                        originY: 'center'
+                    }
+                }
+                else {
+                    // do nothing, not possible yet
+                    console.log("How did I get here?");
+                }
+            }
+            /* 
+
+            don't need this right now, this functionality should be handled by the toolbar current selection
+
             drawingModeEl.onclick = function () {
                 canvas.isDrawingMode = !canvas.isDrawingMode;
                 if (canvas.isDrawingMode) {
@@ -40,7 +94,7 @@ Workspace.factory('fabricJsService', function() {
                     drawingOptionsEl.style.display = 'none';
                 }
             };
-
+            */
             imageJSONEl.onclick = function () {
 
                 // convert canvas to a json string
@@ -65,7 +119,6 @@ Workspace.factory('fabricJsService', function() {
                     ctx.moveTo(0, 5);
                     ctx.lineTo(10, 5);
                     ctx.closePath();
-                    jquery
                     ctx.stroke();
 
                     return patternCanvas;
@@ -134,12 +187,17 @@ Workspace.factory('fabricJsService', function() {
 
                 var img = new Image();
                 img.src = 'http://www.entropiaplanets.com/w/images/c/cd/Warning_sign.png';
-                // ../assets/honey_im_subtle.png
+                // was ../assets/honey_im_subtle.png
                 var texturePatternBrush = new fabric.PatternBrush(canvas);
                 texturePatternBrush.source = img;
             }
 
             $('drawing-mode-selector').onchange = function () {
+
+                // drawing mode selection for this example is only expecting one tool
+                // 'freeDrawingBrush', however we will need to switch back and forth between arbitrary
+                // tools and cannot use this as the top-level indicator of which tool is selected
+                // perhaps new methods that get/set current tool will be useful for later even handlers
 
                 if (this.value === 'hline') {
                     canvas.freeDrawingBrush = vLinePatternBrush;
@@ -193,9 +251,85 @@ Workspace.factory('fabricJsService', function() {
                 canvas.freeDrawingBrush.shadowBlur = 0;
             }
 
+            /*
+                Here's where we try to draw a circle. This is cheating somewhat since we never selected it with
+                the toolbar, but it's a start.  Later the toolbar needs to enable the events, or we have an event handler
+                that selects a function based on the currently selected tool
+            */
+
+            var shapeStart = function(o){
+                var pointer;
+                // This is probably not the best place to do this, but...
+                // Turn Off Free Drawing Mode
+                canvas.isDrawingMode = false;
+                pointer = canvas.getPointer(o.e);
+                origX = pointer.x;
+                origY = pointer.y;
+
+                /*
+                    here is where general code needs to select the shape type and
+                    parameters from the toolbar state
+                    this will run only when a new shape is starting
+                */
+                shapeSpec.left = pointer.x;
+                shapeSpec.top = pointer.y;
+                shape = new currentShape(shapeSpec);
+
+                // shape is defaulting to a circle (as currently defined by above test.currentShape)
+
+                canvas.add(shape);
+            }
+            var shapeDraw = function(o) {
+                if (!mouseDown) return;
+                var pointer = canvas.getPointer(o.e);
+                shape.set(
+                    {
+                        /*
+                            these shape parameters will be specific to current tool selection
+                            this code updates the size based on displacement from the click origin
+                            a different sort of function will be necessary to create this spec
+                            since most objects will have different ways of controlling their size
+                        */
+
+                        radius: Math.abs(origX - pointer.x)
+                    });
+
+                canvas.renderAll();
+            }
+
+            /* 
+                These above functions do very specific circle-drawing stuff, but
+                general functionality will be preferred.  Currently they exist
+                separately from the event handlers because the events need to have
+                different behavior for different tasks
+            */
+
+            canvas.on('mouse:down', function(o){
+                // select appropriate function based on selected tool
+                // we need some var in the scope to keep track of 'active tool selection'
+                // the value of this var will point to the function that should be passed to the event handlers
+                // should the function be passed in directly or define another function that handles the
+                // specialized event handling... if the latter, then the mouse event should control the
+                // mouseDown variable exclusively to ensure no weird condition overlap
+                mouseDown = true;
+                shapeStart(o);
+            });
+
+            canvas.on('mouse:move', function(o){
+                // do the circle drawing action for now
+                shapeDraw(o);
+            });
+
+            canvas.on('mouse:up', function(o){
+                // this is all that is needed here right now, eventually
+                // the timeout function can handle comment posting
+                mouseDown = false;
+            });
+
             returnCanvas = canvas
 
         })();
+
 
         (function () {
             fabric.util.addListener(fabric.window, 'load', function () {
