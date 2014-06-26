@@ -1,30 +1,83 @@
-<a ui-sref="app.annotations">Back to Annotations</a>
-{{currentAnnotation}}
-
 <!-- fabric formatting stuff... probably does not belong here -->
 
-<div id="bd-wrapper">
-    <h2><span>Annotation Workspace</span></h2>
-    {{currentAnnotation}}
-
-    <canvas class="coveredImage" id="annotation_canvas" width="800" height="600" style="border:1px solid #aaa"></canvas>
-    <!--<div class="outsideWrapper">
-    	<div class="insideWrapper">
-
-    	</div>
-	</div>-->
-
-    <ul>
-        <li><strong>Events:</strong></li>
-        <li ng-repeat="event in events">{{event.id}}: {{event.text}}</li>
+    <ul class="annotations-toolbar">
+        <li class="move"><span class="icon glyphicon glyphicon-ok"></span></li>
+        <li class="pencil"><span class="icon glyphicon glyphicon-ok"></span></li>
+        <li class="circle"><span class="icon glyphicon glyphicon-ok"></span></li>
+        <li class="pin"><span class="icon glyphicon glyphicon-ok"></span></li>
+        <li class="arrow"><span class="icon glyphicon glyphicon-ok"></span></li>
+        <li class="text active"><span class="icon glyphicon glyphicon-ok"></span></li>
+        <li class="zoom-in"><span class="icon glyphicon glyphicon-ok"></span></li>
+        <li class="colorpicker"><span class="icon glyphicon glyphicon-ok"></span></li>
+        <li class="comments">
+            <span class="icon glyphicon glyphicon-ok"></span>
+            <span class="additional-info">{{comments.length}}</span>
+            </li>
+        <li class="approved">
+            <span class="icon glyphicon glyphicon-ok"></span>
+            <span class="additional-info">{{approved.length}}</span>
+            </li>
+        <li class="rejected">
+            <span class="icon glyphicon glyphicon-ok"></span>
+            <span class="additional-info">{{rejected.length}}</span>
+            </li>
     </ul>
+    <div class="row">
+        <div class="col-md-9">
+            <canvas id="annotation_canvas" class="annotations-canvas" width="800" height="600"></canvas>
+            <div class="annotations-carousel">
+                <ul>
+                    <li class="previous"></li>
+                    <li ng-repeat="image in images"></li>
+                    <li class="next"></li>
+                </ul>
+            </div>
+            <h3>{{currentAnnotation.annotation.name}}</h3>
+        </div>
+        <div class="col-md-3">
+            <ul class="comment-list">
+                <li class="user-input clearfix">
+                    <form id="annotation-input">
+                        <textarea name="user-input" rows="8" cols="40" ng-model="newCommentText"></textarea>
+                        <div class="pull-right">
+                            <button name="user-approve" class="btn btn-default"><i class="aprrove glyphicon glyphicon-ok"></i></button>
+                            <button name="user-reject" class="btn btn-default"><i class="reject glyphicon glyphicon-ok"></i></button>
+                            <button type="submit" name="user-add-comment" class="btn btn-primary" ng-click="addComment()">Add Comment</button>
+                        </div>
+                    </form>
+                </li>
+                <li class="seperator"></li>
+                <li ng-repeat="comment in comments" class="comment {{comment.type}}">
+                    <div ng-switch="comment.type">
+                        <div ng-when="normal">
+                            <div class="comment-holder">
+                                <div class="user-gravatar">
+                                    <img ng-src="http://www.gravatar.com/avatar/{{comment.email}}" alt="" />
+                                </div>
+                                <div class="comment-content">
+                                    <strong>{{comment.name}}</strong>
+                                    <p>
+                                        {{comment.text}}
+                                    </p>
+                                    </div>
+                                </div>
+                                <div class="comment-meta">
+                                    <span class="comment-id">{{comment.annotationId}}</span>
+                                    <span class="comment-timestamp pull-right">{{comment.timestamp}}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
 
-    <div style="display: inline-block; margin-left: 10px">
+    <div style="display: inline-block; margin-left: 10px; display: none;">
         <button id="drawing-mode" class="btn btn-info">Cancel drawing mode</button>
         <br>
         <button id="clear-canvas" class="btn btn-info">Clear</button>
         <br>
-        <!-- add new button to create image flattening -->
         <button id="image-to-json" class="btn btn-info">Canvas to JSON</button>
         <br>
         <button id="zoom-tool" class="btn btn-info">Zoom:</button>
@@ -55,7 +108,6 @@
 
             <label for="drawing-line-width">Line width:</label>
             <span class="info">5</span>
-            <!-- I don't think this even worked... ? -->
             <input type="range" value="5" min="0" max="150" id="drawing-line-width">
             <br>
 
@@ -78,16 +130,15 @@
             <br>
         </div>
     </div>
-</div>
 
 <!-- doesn't really work but placeholder I guess... apparently this table should be below the canvas-->
-<div>
+
+<!-- <div>
 	Collection assets
     <div><input type="text" ng-model="tableFilter"></div>
     <button ng-click="tableParams.sorting({})" class="btn btn-default pull-right">Clear sorting</button>
     <p><strong>Sorting:</strong> {{tableParams.sorting()|json}}</p>
     <table ng-table="tableParams" class="table">
-        <!-- this should be grabbing the data attribute of the tableParams from $scope -->
         <tr ng-repeat="element in $data | filter: tableFilter">
           <td data-title="'Updates'" sortable="'annotation.hasRecentActivity'">
               <span ng-if="element.annotation.hasRecentActivity">New Notes!</span>
@@ -102,7 +153,7 @@
               <a ui-sref="app.annotations.details({annotationID: element.annotation.id})">{{element.annotation.description}}</a>
           </td>
           <td data-title="'Owner'" sortable="'annotation.owner'">
-              <!-- maybe later use ID for linking to profiles -->
+
               {{element.annotation.owner}}
           </td>
           <td data-title="'Status'" sortable="'annotation.status'">
@@ -115,4 +166,4 @@
               {{element.annotation.lastUpdateTime}}
           </td></tr>
     </table>
-</div>
+</div> -->
