@@ -41,14 +41,18 @@ Workspace.controller('AnnotationDetailsCtrl', [
     $scope.fabric.canvas.on('object:added', function(obj) {
       // this logic seems slightly recursive
       // circles are being placed more often than expected
+      /* this circle stuff is just to debug the event handler
       var circle;
       circle = new fabric.Circle({
         radius: 10,
-        fill: "",
+        fill: "rgba(" + (Math.floor(Math.random() * 255) + 1) + ", " + (Math.floor(Math.random() * 255) + 1) + ", " + (Math.floor(Math.random() * 255) + 1) + ", 1)",
         stroke: "rgba(" + (Math.floor(Math.random() * 255) + 1) + ", " + (Math.floor(Math.random() * 255) + 1) + ", " + (Math.floor(Math.random() * 255) + 1) + ", 1)",
       });
       console.log(circle);
       $scope.currentAnnotationGroup.push(circle);
+      */
+      console.log(obj);
+      // alert("You added an object group!");
       return em.unit;
     });
     return em.unit;

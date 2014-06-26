@@ -2,19 +2,7 @@ Workspace.factory('fabricJsService', function() {
   return {
     init: function(path) {
         var returnCanvas;
-        var mouseDown, origX, origY, shape, currentShape, shapeSpec
-        currentShape = fabric.Circle;
-        shapeSpec = {                 // set up properties for the current shape outside of the function
-                        radius: 1,
-                        strokeWidth: 5,
-                        stroke: 'red',
-                        selectable: false,
-                        fill: "",
-                        originX: 'center',
-                        originY: 'center'
-                    }
-        // don't like this, but it works for now, keeping track of Mouse status outside
-        // of the event handlers will make it easier to use timeouts, but it feels dirty
+        var globscale = 1; // set global scaling, probably not needed but referenced in canvas.on("mouse:down")
 
         returnCanvas = {};
 
@@ -23,11 +11,21 @@ Workspace.factory('fabricJsService', function() {
                 return document.getElementById(id)
             };
 
+            var mouseDown, origX, origY, shape;
             var canvas = this.__canvas = new fabric.Canvas('annotation_canvas', {
-                isDrawingMode: true
+                isDrawingMode: true,
+                isShapeMode: false
             });
 
+            canvas.on("after:render", function(){
+                // this fixes the weird offset brush problem
+                canvas.calcOffset();
+            });
+
+            // set background to asset image
             canvas.setBackgroundImage(path, canvas.renderAll.bind(canvas));
+            //set current shape class to null
+            canvas.currentShape = null;
 
             var drawingModeEl = $('drawing-mode'),
                 drawingOptionsEl = $('drawing-mode-options'),
@@ -37,10 +35,18 @@ Workspace.factory('fabricJsService', function() {
                 drawingShadowWidth = $('drawing-shadow-width'),
                 drawingShadowOffset = $('drawing-shadow-offset'),
                 clearEl = $('clear-canvas'),
+                zoomEl = $('zoom-tool'),
                 imageJSONEl = $('image-to-json');
 
             clearEl.onclick = function () {
                 canvas.clear()
+            };
+
+            canvas.isZoomingMode = false;
+            zoomEl.onclick = function() {
+                canvas.isZoomingMode = !canvas.isZoomingMode;
+                canvas.isDrawingMode = false;
+                canvas.isShapeMode = false;
             };
 
             // let's see if we can make a toolbar selector to pick circles and rectangles
@@ -49,9 +55,12 @@ Workspace.factory('fabricJsService', function() {
 
                 // for now, sloppily make instructions for what the drawing handlers should do
 
+                canvas.isDrawingMode = false;
+                canvas.isShapeMode = true;
+
                 if (this.value == "Circle") {
-                    currentShape = fabric.Circle;
-                    shapeSpec = {
+                    canvas.currentShape = fabric.Circle;
+                    canvas.shapeSpec = {
                         radius: 1,
                         strokeWidth: 5,
                         stroke: 'red',
@@ -60,19 +69,32 @@ Workspace.factory('fabricJsService', function() {
                         originX: 'center',
                         originY: 'center'
                     }
+                    canvas.drawParams = function(pointer) {
+                        return {
+
+                            radius: Math.abs(origX - pointer.x)
+                        };
+                    };
                 }
                 else if (this.value == "Rectangle") {
-                    currentShape = fabric.Rect;
-                    shapeSpec = {                 // set up properties for the current shape outside of the function
+                    canvas.currentShape = fabric.Rect;
+                    canvas.shapeSpec = {                 // set up properties for the current shape outside of the function
                         height: 1,
                         width: 1,
                         strokeWidth: 5,
                         stroke: 'red',
                         selectable: false,
                         fill: "",
-                        originX: 'center',
-                        originY: 'center'
-                    }
+                        originX: 'left',
+                        originY: 'top'
+                    };
+                    canvas.drawParams = function(pointer) {
+                        return {
+
+                            width: -(origX - pointer.x),
+                            height: -(origY - pointer.y)
+                        };
+                    };
                 }
                 else {
                     // do nothing, not possible yet
@@ -199,6 +221,9 @@ Workspace.factory('fabricJsService', function() {
                 // tools and cannot use this as the top-level indicator of which tool is selected
                 // perhaps new methods that get/set current tool will be useful for later even handlers
 
+                canvas.isShapeMode = false;
+                canvas.isDrawingMode = true;
+
                 if (this.value === 'hline') {
                     canvas.freeDrawingBrush = vLinePatternBrush;
                 }
@@ -259,9 +284,6 @@ Workspace.factory('fabricJsService', function() {
 
             var shapeStart = function(o){
                 var pointer;
-                // This is probably not the best place to do this, but...
-                // Turn Off Free Drawing Mode
-                canvas.isDrawingMode = false;
                 pointer = canvas.getPointer(o.e);
                 origX = pointer.x;
                 origY = pointer.y;
@@ -271,28 +293,17 @@ Workspace.factory('fabricJsService', function() {
                     parameters from the toolbar state
                     this will run only when a new shape is starting
                 */
-                shapeSpec.left = pointer.x;
-                shapeSpec.top = pointer.y;
-                shape = new currentShape(shapeSpec);
 
-                // shape is defaulting to a circle (as currently defined by above test.currentShape)
+                canvas.shapeSpec.left = pointer.x;
+                canvas.shapeSpec.top = pointer.y;
+                shape = new canvas.currentShape(canvas.shapeSpec);
 
                 canvas.add(shape);
             }
             var shapeDraw = function(o) {
                 if (!mouseDown) return;
                 var pointer = canvas.getPointer(o.e);
-                shape.set(
-                    {
-                        /*
-                            these shape parameters will be specific to current tool selection
-                            this code updates the size based on displacement from the click origin
-                            a different sort of function will be necessary to create this spec
-                            since most objects will have different ways of controlling their size
-                        */
-
-                        radius: Math.abs(origX - pointer.x)
-                    });
+                shape.set(canvas.drawParams(pointer));
 
                 canvas.renderAll();
             }
@@ -312,22 +323,51 @@ Workspace.factory('fabricJsService', function() {
                 // specialized event handling... if the latter, then the mouse event should control the
                 // mouseDown variable exclusively to ensure no weird condition overlap
                 mouseDown = true;
-                shapeStart(o);
+                if (canvas.isShapeMode) {
+                    shapeStart(o);
+                } else if (canvas.isZoomingMode) {
+                    // Do zooming init
+                    origX = canvas.getPointer(o.e).x;
+                }
             });
 
             canvas.on('mouse:move', function(o){
-                // do the circle drawing action for now
-                shapeDraw(o);
+                if (canvas.isShapeMode) {
+                    // do the circle drawing action for now
+                    shapeDraw(o);
+                } else if (canvas.isZoomingMode) {
+                    // handle zoom by drag
+                    var SCALE_FACTOR = 1.1;
+                    var pointer = canvas.getPointer(o.e)
+                    var delta = origX - pointer.x;
+                    var objects = canvas.getObjects();
+                    var dd = 1;
+                    if (delta == 5) dd=SCALE_FACTOR;
+                    if (delta == -5) dd=1/SCALE_FACTOR;
+                    globscale = globscale * dd;
+                    for (var i in objects) {
+                        objects[i].setCoords;
+                        objects[i].scaleX = globscale;
+                        objects[i].scaleY = globscale;
+                        objects[i].left = objects[i].left * dd;
+                        objects[i].top = objects[i].top * dd;
+                        objects[i].setCoords;
+                    }
+                canvas.renderAll();
+                canvas.calcOffset();
+                }
             });
 
             canvas.on('mouse:up', function(o){
                 // this is all that is needed here right now, eventually
                 // the timeout function can handle comment posting
                 mouseDown = false;
+                console.log(canvas.isZoomingMode);
             });
 
+            /* broken attempt at zooming with mousewheel */
+            
             returnCanvas = canvas
-
         })();
 
 
@@ -345,7 +385,6 @@ Workspace.factory('fabricJsService', function() {
                 }
             });
         })();
-        ;
       return {
         canvas: returnCanvas
       };
