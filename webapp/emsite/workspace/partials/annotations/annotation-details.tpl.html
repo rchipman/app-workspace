@@ -1,35 +1,40 @@
 <!-- fabric formatting stuff... probably does not belong here -->
 
     <ul class="annotations-toolbar">
-        <li class="move"><span class="icon glyphicon glyphicon-ok"></span></li>
-        <li class="pencil"><span class="icon glyphicon glyphicon-ok"></span></li>
-        <li class="circle"><span class="icon glyphicon glyphicon-ok"></span></li>
-        <li class="pin"><span class="icon glyphicon glyphicon-ok"></span></li>
-        <li class="arrow"><span class="icon glyphicon glyphicon-ok"></span></li>
-        <li class="text active"><span class="icon glyphicon glyphicon-ok"></span></li>
-        <li class="zoom-in"><span class="icon glyphicon glyphicon-ok"></span></li>
-        <li class="colorpicker"><span class="icon glyphicon glyphicon-ok"></span></li>
+        <li class="move" ng-click="selectTool('move')"><span class="icon glyphicon glyphicon-screenshot"></span></li>
+        <li class="draw" ng-click="selectTool('draw')"><span class="icon glyphicon glyphicon-pencil"></span></li>
+        <li class="shape" ng-click="selectTool('shape')"><span class="icon glyphicon glyphicon-unchecked"></span></li>
+
+        <li class="comment" ng-click="selectTool('comment')"><span class="icon glyphicon glyphicon-pushpin"></span></li>
+        <li class="arrow" ng-click="selectTool('arrow')"><span class="icon glyphicon glyphicon-arrow-right"></span></li>
+        <li class="text" ng-click="selectTool('text')"><span class="icon glyphicon glyphicon-font"></span></li>
+        <li class="zoom" ng-click="selectTool('zoom')"><span class="icon glyphicon glyphicon-zoom-in"></span></li>
+        <li class="colorpicker" ng-click="selectTool('colorpicker')"><span class="icon glyphicon glyphicon-tint colorpicker"></span></li>
         <li class="comments">
-            <span class="icon glyphicon glyphicon-ok"></span>
+            <span class="icon glyphicon glyphicon-comment"></span>
             <span class="additional-info">{{comments.length}}</span>
-            </li>
+        </li>
         <li class="approved">
-            <span class="icon glyphicon glyphicon-ok"></span>
-            <span class="additional-info">{{approved.length}}</span>
-            </li>
+            <span class="icon glyphicon glyphicon-thumbs-up"></span>
+            <span class="additional-info">{{getApprovals().length}}</span>
+        </li>
         <li class="rejected">
-            <span class="icon glyphicon glyphicon-ok"></span>
-            <span class="additional-info">{{rejected.length}}</span>
-            </li>
+            <span class="icon glyphicon glyphicon-thumbs-down"></span>
+            <span class="additional-info">{{getRejections().length}}</span>
+        </li>
     </ul>
     <div class="row">
         <div class="col-md-9">
             <canvas id="annotation_canvas" class="annotations-canvas" width="800" height="600"></canvas>
             <div class="annotations-carousel">
                 <ul>
-                    <li class="previous"></li>
-                    <li ng-repeat="image in images"></li>
-                    <li class="next"></li>
+                    <li class="previous icon glyphicon glyphicon-backward"></li>
+                    <li ng-repeat="thumb in thumbs">
+                    	
+                    	<img class="thumbnail" display="table-cell;" ng-src="{{thumb}}"></img>
+                    
+                    </li>
+                    <li class="next icon glyphicon glyphicon-forward"></li>
                 </ul>
             </div>
             <h3>{{currentAnnotation.annotation.name}}</h3>
@@ -40,8 +45,8 @@
                     <form id="annotation-input">
                         <textarea name="user-input" rows="8" cols="40" ng-model="newCommentText"></textarea>
                         <div class="pull-right">
-                            <button name="user-approve" class="btn btn-default"><i class="aprrove glyphicon glyphicon-ok"></i></button>
-                            <button name="user-reject" class="btn btn-default"><i class="reject glyphicon glyphicon-ok"></i></button>
+                            <button name="user-approve" class="btn btn-default"><i class="approve glyphicon glyphicon-remove-circle"></i></button>
+                            <button name="user-reject" class="btn btn-default"><i class="reject glyphicon glyphicon-ok-circle"></i></button>
                             <button type="submit" name="user-add-comment" class="btn btn-primary" ng-click="addComment()">Add Comment</button>
                         </div>
                     </form>
@@ -73,6 +78,8 @@
         </div>
     </div>
 
+<!-- all below code is obsolete -->
+
     <div style="display: inline-block; margin-left: 10px; display: none;">
         <button id="drawing-mode" class="btn btn-info">Cancel drawing mode</button>
         <br>
@@ -87,14 +94,15 @@
             <label for="drawing-mode-selector">Mode:</label>
             <select id="drawing-mode-selector">
                 <option>Pencil</option>
-                <option>Circle</option>
+<!--            really don't care about these at all     
+				<option>Circle</option>
                 <option>Spray</option>
                 <option>Pattern</option>
                 <option>hline</option>
                 <option>vline</option>
                 <option>square</option>
                 <option>diamond</option>
-                <option>texture</option>
+                <option>texture</option> -->
             </select><br>
             </select>
             <br>

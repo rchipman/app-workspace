@@ -2,213 +2,254 @@ Workspace.factory 'fabricJsService', ->
 
     init: (path) ->
         returnCanvas = {}
-        `
-        (function () {
-            var $ = function (id) {
-                return document.getElementById(id)
-            };
+        (() ->
+            docGet = (id) ->
+                document.getElementById(id)
 
-            var canvas = this.__canvas = new fabric.Canvas('annotation_canvas', {
-                isDrawingMode: true
-            });
-
-            canvas.setBackgroundImage(path, canvas.renderAll.bind(canvas));
-
-            var drawingModeEl = $('drawing-mode'),
-                drawingOptionsEl = $('drawing-mode-options'),
-                drawingColorEl = $('drawing-color'),
-                drawingShadowColorEl = $('drawing-shadow-color'),
-                drawingLineWidthEl = $('drawing-line-width'),
-                drawingShadowWidth = $('drawing-shadow-width'),
-                drawingShadowOffset = $('drawing-shadow-offset'),
-                clearEl = $('clear-canvas'),
-                imageJSONEl = $('image-to-json');
-
-            clearEl.onclick = function () {
-                canvas.clear()
-            };
-
-            drawingModeEl.onclick = function () {
-                canvas.isDrawingMode = !canvas.isDrawingMode;
-                if (canvas.isDrawingMode) {
-                    drawingModeEl.innerHTML = 'Cancel drawing mode';
-                    drawingOptionsEl.style.display = '';
-                }
-                else {
-                    drawingModeEl.innerHTML = 'Enter drawing mode';
-                    drawingOptionsEl.style.display = 'none';
-                }
-            };
-
-            imageJSONEl.onclick = function () {
-
-                // convert canvas to a json string
-
-                var json = JSON.stringify(canvas.toJSON());
-
-                console.log(json);
-
-            };
-
-            if (fabric.PatternBrush) {
-                var vLinePatternBrush = new fabric.PatternBrush(canvas);
-                vLinePatternBrush.getPatternSrc = function () {
-
-                    var patternCanvas = fabric.document.createElement('canvas');
-                    patternCanvas.width = patternCanvas.height = 10;
-                    var ctx = patternCanvas.getContext('2d');
-
-                    ctx.strokeStyle = this.color;
-                    ctx.lineWidth = 5;
-                    ctx.beginPath();
-                    ctx.moveTo(0, 5);
-                    ctx.lineTo(10, 5);
-                    ctx.closePath();
-                    jquery
-                    ctx.stroke();
-
-                    return patternCanvas;
-                };
-
-                var hLinePatternBrush = new fabric.PatternBrush(canvas);
-                hLinePatternBrush.getPatternSrc = function () {
-
-                    var patternCanvas = fabric.document.createElement('canvas');
-                    patternCanvas.width = patternCanvas.height = 10;
-                    var ctx = patternCanvas.getContext('2d');
-
-                    ctx.strokeStyle = this.color;
-                    ctx.lineWidth = 5;
-                    ctx.beginPath();
-                    ctx.moveTo(5, 0);
-                    ctx.lineTo(5, 10);
-                    ctx.closePath();
-                    ctx.stroke();
-
-                    return patternCanvas;
-                };
-
-                var squarePatternBrush = new fabric.PatternBrush(canvas);
-                squarePatternBrush.getPatternSrc = function () {
-
-                    var squareWidth = 10,
-                        squareDistance = 2;
-
-                    var patternCanvas = fabric.document.createElement('canvas');
-                    patternCanvas.width = patternCanvas.height = squareWidth + squareDistance;
-                    var ctx = patternCanvas.getContext('2d');
-
-                    ctx.fillStyle = this.color;
-                    ctx.fillRect(0, 0, squareWidth, squareWidth);
-
-                    return patternCanvas;
-                };
-
-                var diamondPatternBrush = new fabric.PatternBrush(canvas);
-                diamondPatternBrush.getPatternSrc = function () {
-
-                    var squareWidth = 10,
-                        squareDistance = 5;
-                    var patternCanvas = fabric.document.createElement('canvas');
-                    var rect = new fabric.Rect({
-                        width: squareWidth,
-                        height: squareWidth,
-                        angle: 45,
-                        fill: this.color
-                    });
-
-                    var canvasWidth = rect.getBoundingRectWidth();
-
-                    patternCanvas.width = patternCanvas.height = canvasWidth + squareDistance;
-                    rect.set({
-                        left: canvasWidth / 2,
-                        top: canvasWidth / 2
-                    });
-
-                    var ctx = patternCanvas.getContext('2d');
-                    rect.render(ctx);
-
-                    return patternCanvas;
-                };
-
-                var img = new Image();
-                img.src = 'http://www.entropiaplanets.com/w/images/c/cd/Warning_sign.png';
-                // ../assets/honey_im_subtle.png
-                var texturePatternBrush = new fabric.PatternBrush(canvas);
-                texturePatternBrush.source = img;
-            }
-
-            $('drawing-mode-selector').onchange = function () {
-
-                if (this.value === 'hline') {
-                    canvas.freeDrawingBrush = vLinePatternBrush;
-                }
-                else if (this.value === 'vline') {
-                    canvas.freeDrawingBrush = hLinePatternBrush;
-                }
-                else if (this.value === 'square') {
-                    canvas.freeDrawingBrush = squarePatternBrush;
-                }
-                else if (this.value === 'diamond') {
-                    canvas.freeDrawingBrush = diamondPatternBrush;
-                }
-                else if (this.value === 'texture') {
-                    canvas.freeDrawingBrush = texturePatternBrush;
-                }
-                else {
-                    canvas.freeDrawingBrush = new fabric[this.value + 'Brush'](canvas);
+            canvas = @__canvas = new fabric.Canvas 'annotation_canvas',
+                {
+                    isDrawingMode: true
                 }
 
-                if (canvas.freeDrawingBrush) {
-                    canvas.freeDrawingBrush.color = drawingColorEl.value;
-                    canvas.freeDrawingBrush.width = parseInt(drawingLineWidthEl.value, 10) || 1;
-                    canvas.freeDrawingBrush.shadowBlur = parseInt(drawingShadowWidth.value, 10) || 0;
-                }
-            };
+            canvas.on "after:render", () ->
+                canvas.calcOffset()
+                em.unit
 
-            drawingColorEl.onchange = function () {
-                canvas.freeDrawingBrush.color = this.value;
-            };
-            drawingShadowColorEl.onchange = function () {
-                canvas.freeDrawingBrush.shadowColor = this.value;
-            };
-            drawingLineWidthEl.onchange = function () {
-                canvas.freeDrawingBrush.width = parseInt(this.value, 10) || 1;
-                this.previousSibling.innerHTML = this.value;
-            };
-            drawingShadowWidth.onchange = function () {
-                canvas.freeDrawingBrush.shadowBlur = parseInt(this.value, 10) || 0;
-                this.previousSibling.innerHTML = this.value;
-            };
-            drawingShadowOffset.onchange = function () {
-                canvas.freeDrawingBrush.shadowOffsetX =
-                    canvas.freeDrawingBrush.shadowOffsetY = parseInt(this.value, 10) || 0;
-                this.previousSibling.innerHTML = this.value;
-            };
+            canvas.setBackgroundImage path, canvas.renderAll.bind(canvas)
 
-            if (canvas.freeDrawingBrush) {
-                canvas.freeDrawingBrush.color = drawingColorEl.value;
-                canvas.freeDrawingBrush.width = parseInt(drawingLineWidthEl.value, 10) || 1;
-                canvas.freeDrawingBrush.shadowBlur = 0;
-            }
+            #drawingModeEl = docGet 'drawing-mode'
+            #drawingOptionsEl = docGet 'drawing-mode-options'
+            #drawingColorEl = docGet 'drawing-color'
+            #drawingShadowColorEl = docGet 'drawing-shadow-color'
+            #drawingLineWidthEl = docGet 'drawing-line-width'
+            #drawingShadowWidth = docGet 'drawing-shadow-width'
+            #drawingShadowOffset = docGet 'drawing-shadow-offset'
+            #clearEl = docGet 'clear-canvas'
+            #imageJSONEl = docGet 'image-to-json'
+
+
+
+            ###
+            I doubt that we can even perform this logic in the factory, and it
+            belongs in a controller I assume
+            ###            
+            $scope.toolkit = [
+                {
+                    name: 'draw'
+                    properties: {}
+                },
+                {
+                    name: 'move'
+                    properties: {}
+                },
+                {
+                    name: 'shape'
+                    properties: {}
+                    type: fabric.Circle
+                    # index of types is same as blanks, useful or dumb
+                    types: [fabric.Circle, fabric.Rect]
+                    blanks: [
+                        {
+                            radius: 1
+                            strokeWidth: 5
+                            stroke: 'red'
+                            selectable: false
+                            fill: ""
+                            originX: 'center'
+                            originY: 'center'
+                        },
+                        {
+                            height: 1
+                            width: 1
+                            strokeWidth: 5
+                            stroke: 'red'
+                            selectable: false
+                            fill: ""
+                            originX: 'left'
+                            originY: 'top'
+                        }
+                    ]
+                    events: {
+                        ###
+
+                        I don't think it makes sense to put these weird event-based props on $scope, so the implementation
+                        is bad and confusing maybe the canvas should know current shape/current tool, but when you have multiple
+                        people drawing it is hard to say without knowing more about how the canvases are deployed
+                        i.e. is it one canvas on server being manipulated or multiple canvases per user being pushed to
+                        merge with server copy
+
+                        ###
+
+                        mouseup: (canvas, o) ->
+                            # not sure if this is best way to do this
+                            # do I even need to pass 'canvas' if it will be valid within executing scope?
+                            # definitely don't want to put a lot of junk on $scope if I don't have to
+                            pointer = canvas.getPointer o.e
+                            spec = @blanks[@types.indexOf @type] # this probably doesn't do what I think it should !!!
+                            spec.left = pointer.x
+                            spec.top = pointer.y
+                            canvas.add new @type(spec)
+                            em.unit
+                        mousedown: (canvas, o) ->
+                            mouseDown = true # gotta be a better way, is this even valid? !!!      
+                            em.unit                              
+                        objectadded: null
+                        mousemove: (canvas, o) ->
+                            if mouseDown # just awful !!!
+                                pointer = canvas.getPointer o.e
+                                shape.set canvas.drawParams(pointer)
+                                canvas.renderAll()
+                            em.unit
+                            }
+                        },
+                        {
+                            name: 'comment'
+                            properties: {}
+                            events: {
+                                mouseup: null # will want to put something here !!!
+                                mousedown: null # seems like this should be happening in AnnotationDetailsCtrl
+                                objectadded: null # then we should fully integrate the 
+                            }
+                        },
+                        {
+                            name: 'arrow' # see below $$$
+                            properties: {}
+                        },
+                        {
+                            name: 'text' # fabric has an existing text tool, need to find out how to use $$$
+                            properties: {}
+                        },
+                        {
+                            name: 'zoom' # this implementation sucks !!! $$$
+                            properties: {}
+                        },
+                        {
+                            name: 'colorpicker' # no implementation $$$
+                            properties: {}
+                        }
+
+            ]
+
+            $scope.selectTool = (toolname) ->
+                for tool in $scope.toolkit # does this even need to be on $scope? !!!
+                    $scope.currentTool = $scope.toolkit[tool] if tool.name is toolname
+                # do whatever else needs to happen !!!
+                null
+
+
+
+            # clearEl.onclick = () ->
+
+            #     # we probably don't even want this
+
+            #     canvas.clear()
+            #     em.unit
+
+            # drawingModeEl.onclick = () ->
+
+            #     # I think this is basically presentation mode from ReviewStudio
+
+            #     canvas.isDrawingMode = not canvas.isDrawingMode
+            #     if  canvas.isDrawingMode
+            #         drawingModeEl.innerHTML = 'Cancel drawing mode'
+            #         drawingOptionsEl.style.display = ''
+            #     else
+            #         drawingModeEl.innerHTML = 'Enter drawing mode'
+            #         drawingOptionsEl.style.display = 'none'
+            #     em.unit
+
+            # imageJSONEl.onclick = () ->
+
+            #     # convert canvas to a json string
+
+            #     json = JSON.stringify canvas.toJSON()
+            #     console.log json
+            #     em.unit
+
+            drawingColorEl.onchange = () ->
+                # this needs a better implementation
+                canvas.freeDrawingBrush.color = @value
+                em.unit
+
+            # drawingShadowColorEl.onchange = () ->
+            #     canvas.freeDrawingBrush.shadowColor = @value
+            #     em.unit
+
+            # drawingLineWidthEl.onchange = () ->
+            #     canvas.freeDrawingBrush.width = parseInt(@value, 10) || 1
+            #     @previousSibling.innerHTML = @value
+            #     em.unit
+
+            # if canvas.freeDrawingBrush
+            #     canvas.freeDrawingBrush.color = drawingColorEl.value
+            #     canvas.freeDrawingBrush.width = parseInt(drawingLineWidthEl.value, 10) || 1
+            #     canvas.freeDrawingBrush.shadowBlur = 0
+
+            # canvas.on('mouse:down', function(o){
+            #     // select appropriate function based on selected tool
+            #     // we need some var in the scope to keep track of 'active tool selection'
+            #     // the value of this var will point to the function that should be passed to the event handlers
+            #     // should the function be passed in directly or define another function that handles the
+            #     // specialized event handling... if the latter, then the mouse event should control the
+            #     // mouseDown variable exclusively to ensure no weird condition overlap
+            #     mouseDown = true;
+            #     if (canvas.isShapeMode) {
+            #         shapeStart(o);
+            #     } else if (canvas.isZoomingMode) {
+            #         // Do zooming init
+            #         origX = canvas.getPointer(o.e).x;
+            #     }
+            # });
+
+            # canvas.on('mouse:move', function(o){
+            #     if (canvas.isShapeMode) {
+            #         // do the circle drawing action for now
+            #         shapeDraw(o);
+            #     } else if (canvas.isZoomingMode) {
+            #         // handle zoom by drag
+            #         var SCALE_FACTOR = 1.1;
+            #         var pointer = canvas.getPointer(o.e);
+            #         var delta = origX - pointer.x;
+            #         var objects = canvas.getObjects();
+            #         //var dd = 1;
+            #         //if (delta == 5) dd=SCALE_FACTOR;
+            #         //if (delta == -5) dd=1/SCALE_FACTOR;
+            #         //globscale = globscale * dd;
+            #         for (var i in objects) {
+            #             objects[i].setCoords();
+            #             objects[i].scaleX = globscale;
+            #             objects[i].scaleY = globscale;
+            #             objects[i].left = objects[i].left * delta;
+            #             objects[i].top = objects[i].top * delta;
+            #             objects[i].setCoords();
+            #         }
+            #     canvas.renderAll();
+            #     canvas.calcOffset();
+            #     }
+            # });
+
+            # canvas.on('mouse:up', function(o){
+            #     # // this is all that is needed here right now, eventually
+            #     # // the timeout function can handle comment posting
+            #     # mouseDown = false;
+            #     $scope.currentTool.events.mouseup(o)
 
             returnCanvas = canvas
 
-        })();
+            em.unit
+        )()
 
-        (function () {
-            fabric.util.addListener(fabric.window, 'load', function () {
-                var canvas = this.__canvas || this.canvas,
-                    canvases = this.__canvases || this.canvases;
+        (() ->
+            fabric.util.addListener fabric.window, 'load', () ->
+                canvas = @__canvas || @canvas
+                canvases = @__canvases || @canvases
 
-                canvas && canvas.calcOffset && canvas.calcOffset();
+                canvas and canvas.calcOffset and canvas.calcOffset()
 
-                if (canvases && canvases.length) {
-                    for (var i = 0, len = canvases.length; i < len; i++) {
-                        canvases[i].calcOffset();
-                    }
-                }
-            });
-        })();
-        `
-        return canvas: returnCanvas
+                if canvases and canvases.length
+                    for [0..canvases.length]
+                        canvases[i].calcOffset()
+                em.unit
+                
+        )()
+        canvas: returnCanvas
