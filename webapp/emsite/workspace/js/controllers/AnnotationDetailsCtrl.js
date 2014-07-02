@@ -2,7 +2,7 @@
 
 Workspace.controller('AnnotationDetailsCtrl', [
   '$scope', '$stateParams', '$timeout', 'annotationService', 'fabricJsService', function($scope, $stateParams, $timeout, annotationService, fabricJsService) {
-    var comment, comment2, comment3, commentPin, timeoutFunc, usefulKeys, _ref, _ref1;
+    var comment, comment2, comment3, commentPin, timeoutFunc, usefulKeys;
     self.mouseDown = null;
     self.origX = 0;
     self.origY = 0;
@@ -58,6 +58,7 @@ Workspace.controller('AnnotationDetailsCtrl', [
       for (prop in $scope.currentTool.properties) {
         $scope.fabric.canvas[prop] = $scope.currentTool.properties[prop];
       }
+      console.log($scope.currentTool);
       return em.unit;
     };
     $scope.setApproval = function(user, approvalState) {
@@ -90,6 +91,7 @@ Workspace.controller('AnnotationDetailsCtrl', [
       return item.annotation.id === parseInt($stateParams.annotationID);
     });
     $scope.fabric = fabricJsService.init($scope.currentAnnotation.annotation.path);
+    $scope.selectTool('draw');
     $scope.eventIndex = 0;
     $scope.annotationAction = null;
     $scope.currentAnnotationGroup = [];
@@ -147,56 +149,57 @@ Workspace.controller('AnnotationDetailsCtrl', [
       return em.unit;
     };
     $scope.fabric.canvas.on('mouse:down', function(e) {
-      var pointer, _ref, _ref1;
+      var pointer, _ref;
+      self.mouseDown = true;
       if ($scope.annotationAction !== null) {
         $timeout.cancel($scope.annotationAction);
       }
       pointer = $scope.fabric.canvas.getPointer(e.e);
       self.origX = pointer.x;
       self.origY = pointer.y;
-      if ((_ref = $scope.currentTool) != null) {
-        if ((_ref1 = _ref.events) != null) {
-          if (typeof _ref1.mousedown === "function") {
-            _ref1.mousedown(e, $scope.fabric.canvas);
-          }
+      if ((_ref = $scope.currentTool.events) != null) {
+        if (typeof _ref.mousedown === "function") {
+          _ref.mousedown(e, $scope.fabric.canvas);
         }
       }
       return em.unit;
     });
     $scope.fabric.canvas.on('mouse:up', function(e) {
-      var _ref, _ref1;
-      $scope.annotationAction = $timeout(timeoutFunc, 2000);
-      if ((_ref = $scope.currentTool) != null) {
-        if ((_ref1 = _ref.events) != null) {
-          if (typeof _ref1.mouseup === "function") {
-            _ref1.mouseup(e, $scope.fabric.canvas);
-          }
+      var _ref;
+      self.mouseDown = false;
+      if ($scope.currentTool.annotating) {
+        $scope.annotationAction = $timeout(timeoutFunc, 2000);
+      }
+      if ((_ref = $scope.currentTool.events) != null) {
+        if (typeof _ref.mouseup === "function") {
+          _ref.mouseup(e, $scope.fabric.canvas);
         }
       }
       return em.unit;
     });
     $scope.fabric.canvas.on('mouse:move', function(e) {
-      var _ref, _ref1;
-      if ((_ref = $scope.currentTool) != null) {
-        if ((_ref1 = _ref.events) != null) {
-          if (typeof _ref1.mousemove === "function") {
-            _ref1.mousemove(e, $scope.fabric.canvas);
-          }
+      var _ref;
+      if ((_ref = $scope.currentTool.events) != null) {
+        if (typeof _ref.mousemove === "function") {
+          _ref.mousemove(e, $scope.fabric.canvas);
         }
       }
       return em.unit;
     });
     $scope.fabric.canvas.on('object:added', function(obj) {
-      return $scope.currentAnnotationGroup.push(obj);
-    });
-    if ((_ref = $scope.currentTool) != null) {
-      if ((_ref1 = _ref.events) != null) {
-        if (typeof _ref1.objectadded === "function") {
-          _ref1.objectadded(e, $scope.fabric.canvas);
+      var _ref;
+      if ($scope.currentTool.annotating) {
+        $scope.currentAnnotationGroup.push(obj);
+      }
+      if ((_ref = $scope.currentTool.events) != null) {
+        if (typeof _ref.objectadded === "function") {
+          _ref.objectadded(obj, $scope.fabric.canvas);
         }
       }
-    }
-    em.unit;
+      $scope.fabric.canvas.renderAll();
+      $scope.fabric.canvas.calcOffset();
+      return em.unit;
+    });
     return em.unit;
   }
 ]);

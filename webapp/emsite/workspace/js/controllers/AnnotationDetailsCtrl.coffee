@@ -75,6 +75,7 @@ Workspace.controller 'AnnotationDetailsCtrl',
         # do whatever else needs to happen !!!
         for prop of $scope.currentTool.properties
         	$scope.fabric.canvas[prop] = $scope.currentTool.properties[prop]
+        console.log $scope.currentTool
         em.unit
 
 	$scope.setApproval =
@@ -97,6 +98,7 @@ Workspace.controller 'AnnotationDetailsCtrl',
 		item.annotation.id is parseInt $stateParams.annotationID 
 	# uses init function to create the fabric environment
 	$scope.fabric = fabricJsService.init $scope.currentAnnotation.annotation.path
+	$scope.selectTool('draw')
 	$scope.eventIndex = 0
 	$scope.annotationAction = null
 	$scope.currentAnnotationGroup = []
@@ -116,6 +118,8 @@ Workspace.controller 'AnnotationDetailsCtrl',
 
 	commentPin = () ->
 		dropPoint = $scope.fabric.canvas.getObjects()[$scope.fabric.canvas.getObjects().length-1]
+		# should handle this drop point some better way
+		# currently this method does not support the use of the comment tool (irony)
 
 		new fabric.Group [new fabric.Circle({
 		        radius: 15
@@ -162,26 +166,33 @@ Workspace.controller 'AnnotationDetailsCtrl',
 	    em.unit
 
 	$scope.fabric.canvas.on 'mouse:down', (e) ->
-	 	if $scope.annotationAction isnt null
+		self.mouseDown = true
+		if $scope.annotationAction isnt null
 	    	$timeout.cancel $scope.annotationAction
 	    pointer = $scope.fabric.canvas.getPointer e.e
 	    self.origX = pointer.x
 	    self.origY = pointer.y
-	    $scope.currentTool?.events?.mousedown?(e, $scope.fabric.canvas)
+	    $scope.currentTool.events?.mousedown? e, $scope.fabric.canvas
 	    em.unit
 
 	$scope.fabric.canvas.on 'mouse:up', (e) ->
-	  	$scope.annotationAction = 
-	  		$timeout timeoutFunc, 2000
-	  	$scope.currentTool?.events?.mouseup?(e, $scope.fabric.canvas)
+		self.mouseDown = false
+		if $scope.currentTool.annotating
+		  	$scope.annotationAction = 
+		  		$timeout timeoutFunc, 2000
+	  	$scope.currentTool.events?.mouseup? e, $scope.fabric.canvas
 	  	em.unit
 	$scope.fabric.canvas.on 'mouse:move', (e) ->
-		$scope.currentTool?.events?.mousemove?(e, $scope.fabric.canvas)
+		$scope.currentTool.events?.mousemove? e, $scope.fabric.canvas
 		em.unit
 
 	$scope.fabric.canvas.on 'object:added', (obj) ->
-	    $scope.currentAnnotationGroup.push obj
-		$scope.currentTool?.events?.objectadded?(e, $scope.fabric.canvas)
+		if $scope.currentTool.annotating
+			$scope.currentAnnotationGroup.push obj
+		$scope.currentTool.events?.objectadded? obj, $scope.fabric.canvas
+		# this may not be the best place for these, but it needs to happen somewhat regularly
+		$scope.fabric.canvas.renderAll()
+		$scope.fabric.canvas.calcOffset()
 		em.unit
 	em.unit
 ]

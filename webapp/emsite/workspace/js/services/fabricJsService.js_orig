@@ -18,7 +18,7 @@ Workspace.factory('fabricJsService', function() {
             var canvas = this.__canvas = new fabric.Canvas('annotation_canvas', {
                 isDrawingMode: true,
                 isShapeMode: false,
-                isZOomingMode: false
+                isZoomingMode: false
             });
 
             canvas.on("after:render", function(){
