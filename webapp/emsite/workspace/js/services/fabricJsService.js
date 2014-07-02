@@ -10,13 +10,17 @@ Workspace.factory('fabricJsService', function() {
   toolkit = [
     {
       name: 'draw',
-      properties: {}
+      properties: {
+        isDrawingMode: true
+      }
     }, {
       name: 'move',
       properties: {}
     }, {
       name: 'shape',
-      properties: {},
+      properties: {
+        isDrawingMode: false
+      },
       type: fabric.Circle,
       types: [fabric.Circle, fabric.Rect],
       drawparams: [

@@ -4,7 +4,9 @@ Workspace.factory 'fabricJsService', () ->
     toolkit = [
         {
             name: 'draw'
-            properties: {}
+            properties: {
+                isDrawingMode: true
+            }
         },
         {
             name: 'move'
@@ -12,7 +14,9 @@ Workspace.factory 'fabricJsService', () ->
         },
         {
             name: 'shape'
-            properties: {}
+            properties: {
+                isDrawingMode: false
+            }
             type: fabric.Circle
             # index of types is same as blanks, useful or dumb
             types: [fabric.Circle, fabric.Rect]

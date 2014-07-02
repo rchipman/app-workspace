@@ -73,13 +73,8 @@ Workspace.controller 'AnnotationDetailsCtrl',
     $scope.selectTool = (toolname) ->
         $scope.currentTool = _.findWhere $scope.fabric.toolkit, name: toolname
         # do whatever else needs to happen !!!
-        # $scope.fabric.canvas.set $scope.currentTool.properties # probably some way to do this
-        for prop in $scope.currentTool.properties
+        for prop of $scope.currentTool.properties
         	$scope.fabric.canvas[prop] = $scope.currentTool.properties[prop]
-        console.log $scope.fabric.canvas.isDrawingMode
-        console.log $scope.currentTool.properties
-        console.log $scope.currentTool
-
         em.unit
 
 	$scope.setApproval =

@@ -51,18 +51,13 @@ Workspace.controller('AnnotationDetailsCtrl', [
       return em.unit;
     };
     $scope.selectTool = function(toolname) {
-      var prop, _i, _len, _ref;
+      var prop;
       $scope.currentTool = _.findWhere($scope.fabric.toolkit, {
         name: toolname
       });
-      _ref = $scope.currentTool.properties;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        prop = _ref[_i];
+      for (prop in $scope.currentTool.properties) {
         $scope.fabric.canvas[prop] = $scope.currentTool.properties[prop];
       }
-      console.log($scope.fabric.canvas.isDrawingMode);
-      console.log($scope.currentTool.properties);
-      console.log($scope.currentTool);
       return em.unit;
     };
     $scope.setApproval = function(user, approvalState) {
