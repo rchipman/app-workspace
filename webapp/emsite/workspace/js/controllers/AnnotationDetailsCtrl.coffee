@@ -13,7 +13,9 @@
 Workspace.controller 'AnnotationDetailsCtrl', 
 ['$scope', '$stateParams', '$timeout', 'annotationService', 'fabricJsService',
 ($scope, $stateParams, $timeout, annotationService, fabricJsService) ->
-
+	self.mouseDown = null # look I defined this here in the controller, this is probably bad
+	self.origX = 0 # !!!
+	self.origY = 0 # !!!
 	$scope.currentCommentIndex = 3 # should probably be deprecated to have annotation index tied to comment index
 	$scope.newCommentText = null
 	$scope.approvalHash = {} # empty obj for user: approval kv pairs
@@ -68,6 +70,18 @@ Workspace.controller 'AnnotationDetailsCtrl',
 	    $scope.newCommentText = null
 	    em.unit
 
+    $scope.selectTool = (toolname) ->
+        $scope.currentTool = _.findWhere $scope.fabric.toolkit, name: toolname
+        # do whatever else needs to happen !!!
+        # $scope.fabric.canvas.set $scope.currentTool.properties # probably some way to do this
+        for prop in $scope.currentTool.properties
+        	$scope.fabric.canvas[prop] = $scope.currentTool.properties[prop]
+        console.log $scope.fabric.canvas.isDrawingMode
+        console.log $scope.currentTool.properties
+        console.log $scope.currentTool
+
+        em.unit
+
 	$scope.setApproval =
 	(user, approvalState) ->
 		$scope.approvalHash[user] = approvalState # totally unsafe
@@ -106,7 +120,8 @@ Workspace.controller 'AnnotationDetailsCtrl',
 	###
 
 	commentPin = () ->
-		# make the crappy pin shape
+		dropPoint = $scope.fabric.canvas.getObjects()[$scope.fabric.canvas.getObjects().length-1]
+
 		new fabric.Group [new fabric.Circle({
 		        radius: 15
 		        fill: "#000fff"
@@ -141,8 +156,7 @@ Workspace.controller 'AnnotationDetailsCtrl',
 	    }
 	    $scope.addComment()
 	    # oh please tell me there is a non-ugly way to do this (I bet that's what Coffee is for)
-	    canvasContents = $scope.fabric.canvas.getObjects()
-	    dropPoint = canvasContents[canvasContents.length-1];
+
 	    # fix this ^^^
 	    $scope.fabric.canvas.add commentPin()
 	    # now push annotation info to scope for longer-term tracking
@@ -152,18 +166,27 @@ Workspace.controller 'AnnotationDetailsCtrl',
 	    $scope.$apply()  # is this even necessary here?
 	    em.unit
 
-	$scope.fabric.canvas.on 'mouse:down', () ->
+	$scope.fabric.canvas.on 'mouse:down', (e) ->
 	 	if $scope.annotationAction isnt null
 	    	$timeout.cancel $scope.annotationAction
-	    	em.unit
+	    pointer = $scope.fabric.canvas.getPointer e.e
+	    self.origX = pointer.x
+	    self.origY = pointer.y
+	    $scope.currentTool?.events?.mousedown?(e, $scope.fabric.canvas)
+	    em.unit
 
 	$scope.fabric.canvas.on 'mouse:up', (e) ->
 	  	$scope.annotationAction = 
 	  		$timeout timeoutFunc, 2000
+	  	$scope.currentTool?.events?.mouseup?(e, $scope.fabric.canvas)
 	  	em.unit
+	$scope.fabric.canvas.on 'mouse:move', (e) ->
+		$scope.currentTool?.events?.mousemove?(e, $scope.fabric.canvas)
+		em.unit
 
 	$scope.fabric.canvas.on 'object:added', (obj) ->
 	    $scope.currentAnnotationGroup.push obj
-	    em.unit
+		$scope.currentTool?.events?.objectadded?(e, $scope.fabric.canvas)
+		em.unit
 	em.unit
 ]

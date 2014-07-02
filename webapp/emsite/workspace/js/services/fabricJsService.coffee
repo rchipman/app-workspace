@@ -1,5 +1,118 @@
-Workspace.factory 'fabricJsService', ->
+Workspace.factory 'fabricJsService', () ->
+    getSelf = (name) ->
+        _.find(toolkit, name: name)
+    toolkit = [
+        {
+            name: 'draw'
+            properties: {}
+        },
+        {
+            name: 'move'
+            properties: {}
+        },
+        {
+            name: 'shape'
+            properties: {}
+            type: fabric.Circle
+            # index of types is same as blanks, useful or dumb
+            types: [fabric.Circle, fabric.Rect]
+            drawparams: [
+                (pointer) ->
+                    {
+                        radius: Math.abs(self.origX - pointer.x)
+                    }
+                ,
+                (pointer) ->
+                    {
+                        width: -(self.origX - pointer.x),
+                        height: -(self.origY - pointer.y)
+                    }
+            ]
+            blanks: [
+                {
+                    radius: 1
+                    strokeWidth: 5
+                    stroke: 'red'
+                    selectable: false
+                    fill: ""
+                    originX: 'center'
+                    originY: 'center'
+                },
+                {
+                    height: 1
+                    width: 1
+                    strokeWidth: 5
+                    stroke: 'red'
+                    selectable: false
+                    fill: ""
+                    originX: 'left'
+                    originY: 'top'
+                }
+            ]
+            events: {
+ 
+                # I don't think it makes sense to put these weird event-based props on $scope, so the implementation
+                # is bad and confusing maybe the canvas should know current shape/current tool, but when you have multiple
+                # people drawing it is hard to say without knowing more about how the canvases are deployed
+                # i.e. is it one canvas on server being manipulated or multiple canvases per user being pushed to
+                # merge with server copy
 
+ 
+
+                mouseup: (e, canvas) ->
+                    # not sure if this is best way to do this
+                    # do I even need to pass 'canvas' if it will be valid within executing scope?
+                    # definitely don't want to put a lot of junk on $scope if I don't have to
+                    self.mouseDown = false
+                mousedown: (e, canvas) ->
+                    self.mouseDown = true # gotta be a better way !!!
+                    pointer = canvas.getPointer e.e
+                    we = getSelf 'shape'
+                    spec = we.blanks[we.types.indexOf we.type] # this probably doesn't do what I think it should !!!
+                    spec.left = pointer.x
+                    spec.top = pointer.y
+                    shape = new we.type spec
+                    canvas.add shape
+                    em.unit                              
+                objectadded: null
+                mousemove: (e, canvas) ->
+                    if self.mouseDown # just awful !!!
+                        we = getSelf('shape')
+                        pointer = canvas.getPointer e.e
+                        # need to find some way to get the shape now
+                        shape = canvas.getObjects()[canvas.getObjects().length-1]
+                        console.log shape
+                        shape.set we.drawparams[we.types.indexOf we.type] pointer
+                        canvas.renderAll()
+                    em.unit
+                }
+            },
+                {
+                    name: 'comment'
+                    properties: {}
+                    events: {
+                        mouseup: null # will want to put something here !!!
+                        mousedown: null # seems like this should be happening in AnnotationDetailsCtrl
+                        objectadded: null # then we should fully integrate the 
+                    }
+                },
+                {
+                    name: 'arrow' # see below $$$
+                    properties: {}
+                },
+                {
+                    name: 'text' # fabric has an existing text tool, need to find out how to use $$$
+                    properties: {}
+                },
+                {
+                    name: 'zoom' # this implementation sucks !!! $$$
+                    properties: {}
+                },
+                {
+                    name: 'colorpicker' # no implementation $$$
+                    properties: {}
+                }
+    ]
     init: (path) ->
         returnCanvas = {}
         (() ->
@@ -33,129 +146,12 @@ Workspace.factory 'fabricJsService', ->
             I doubt that we can even perform this logic in the factory, and it
             belongs in a controller I assume
             ###            
-            $scope.toolkit = [
-                {
-                    name: 'draw'
-                    properties: {}
-                },
-                {
-                    name: 'move'
-                    properties: {}
-                },
-                {
-                    name: 'shape'
-                    properties: {}
-                    type: fabric.Circle
-                    # index of types is same as blanks, useful or dumb
-                    types: [fabric.Circle, fabric.Rect]
-                    blanks: [
-                        {
-                            radius: 1
-                            strokeWidth: 5
-                            stroke: 'red'
-                            selectable: false
-                            fill: ""
-                            originX: 'center'
-                            originY: 'center'
-                        },
-                        {
-                            height: 1
-                            width: 1
-                            strokeWidth: 5
-                            stroke: 'red'
-                            selectable: false
-                            fill: ""
-                            originX: 'left'
-                            originY: 'top'
-                        }
-                    ]
-                    events: {
-                        ###
-
-                        I don't think it makes sense to put these weird event-based props on $scope, so the implementation
-                        is bad and confusing maybe the canvas should know current shape/current tool, but when you have multiple
-                        people drawing it is hard to say without knowing more about how the canvases are deployed
-                        i.e. is it one canvas on server being manipulated or multiple canvases per user being pushed to
-                        merge with server copy
-
-                        ###
-
-                        mouseup: (canvas, o) ->
-                            # not sure if this is best way to do this
-                            # do I even need to pass 'canvas' if it will be valid within executing scope?
-                            # definitely don't want to put a lot of junk on $scope if I don't have to
-                            pointer = canvas.getPointer o.e
-                            spec = @blanks[@types.indexOf @type] # this probably doesn't do what I think it should !!!
-                            spec.left = pointer.x
-                            spec.top = pointer.y
-                            canvas.add new @type(spec)
-                            em.unit
-                        mousedown: (canvas, o) ->
-                            mouseDown = true # gotta be a better way, is this even valid? !!!      
-                            em.unit                              
-                        objectadded: null
-                        mousemove: (canvas, o) ->
-                            if mouseDown # just awful !!!
-                                pointer = canvas.getPointer o.e
-                                shape.set canvas.drawParams(pointer)
-                                canvas.renderAll()
-                            em.unit
-                            }
-                        },
-                        {
-                            name: 'comment'
-                            properties: {}
-                            events: {
-                                mouseup: null # will want to put something here !!!
-                                mousedown: null # seems like this should be happening in AnnotationDetailsCtrl
-                                objectadded: null # then we should fully integrate the 
-                            }
-                        },
-                        {
-                            name: 'arrow' # see below $$$
-                            properties: {}
-                        },
-                        {
-                            name: 'text' # fabric has an existing text tool, need to find out how to use $$$
-                            properties: {}
-                        },
-                        {
-                            name: 'zoom' # this implementation sucks !!! $$$
-                            properties: {}
-                        },
-                        {
-                            name: 'colorpicker' # no implementation $$$
-                            properties: {}
-                        }
-
-            ]
-
-            $scope.selectTool = (toolname) ->
-                for tool in $scope.toolkit # does this even need to be on $scope? !!!
-                    $scope.currentTool = $scope.toolkit[tool] if tool.name is toolname
-                # do whatever else needs to happen !!!
-                null
-
-
 
             # clearEl.onclick = () ->
 
             #     # we probably don't even want this
 
             #     canvas.clear()
-            #     em.unit
-
-            # drawingModeEl.onclick = () ->
-
-            #     # I think this is basically presentation mode from ReviewStudio
-
-            #     canvas.isDrawingMode = not canvas.isDrawingMode
-            #     if  canvas.isDrawingMode
-            #         drawingModeEl.innerHTML = 'Cancel drawing mode'
-            #         drawingOptionsEl.style.display = ''
-            #     else
-            #         drawingModeEl.innerHTML = 'Enter drawing mode'
-            #         drawingOptionsEl.style.display = 'none'
             #     em.unit
 
             # imageJSONEl.onclick = () ->
@@ -166,10 +162,10 @@ Workspace.factory 'fabricJsService', ->
             #     console.log json
             #     em.unit
 
-            drawingColorEl.onchange = () ->
-                # this needs a better implementation
-                canvas.freeDrawingBrush.color = @value
-                em.unit
+            # drawingColorEl.onchange = () ->
+            #     # this needs a better implementation
+            #     canvas.freeDrawingBrush.color = @value
+            #     em.unit
 
             # drawingShadowColorEl.onchange = () ->
             #     canvas.freeDrawingBrush.shadowColor = @value
@@ -253,3 +249,4 @@ Workspace.factory 'fabricJsService', ->
                 
         )()
         canvas: returnCanvas
+        toolkit: toolkit

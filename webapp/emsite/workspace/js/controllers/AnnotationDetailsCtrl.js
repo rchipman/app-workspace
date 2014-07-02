@@ -2,7 +2,10 @@
 
 Workspace.controller('AnnotationDetailsCtrl', [
   '$scope', '$stateParams', '$timeout', 'annotationService', 'fabricJsService', function($scope, $stateParams, $timeout, annotationService, fabricJsService) {
-    var comment, comment2, comment3, commentPin, timeoutFunc, usefulKeys;
+    var comment, comment2, comment3, commentPin, timeoutFunc, usefulKeys, _ref, _ref1;
+    self.mouseDown = null;
+    self.origX = 0;
+    self.origY = 0;
     $scope.currentCommentIndex = 3;
     $scope.newCommentText = null;
     $scope.approvalHash = {};
@@ -45,6 +48,21 @@ Workspace.controller('AnnotationDetailsCtrl', [
         timestamp: moment().fromNow()
       });
       $scope.newCommentText = null;
+      return em.unit;
+    };
+    $scope.selectTool = function(toolname) {
+      var prop, _i, _len, _ref;
+      $scope.currentTool = _.findWhere($scope.fabric.toolkit, {
+        name: toolname
+      });
+      _ref = $scope.currentTool.properties;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        prop = _ref[_i];
+        $scope.fabric.canvas[prop] = $scope.currentTool.properties[prop];
+      }
+      console.log($scope.fabric.canvas.isDrawingMode);
+      console.log($scope.currentTool.properties);
+      console.log($scope.currentTool);
       return em.unit;
     };
     $scope.setApproval = function(user, approvalState) {
@@ -94,6 +112,8 @@ Workspace.controller('AnnotationDetailsCtrl', [
     */
 
     commentPin = function() {
+      var dropPoint;
+      dropPoint = $scope.fabric.canvas.getObjects()[$scope.fabric.canvas.getObjects().length - 1];
       return new fabric.Group([
         new fabric.Circle({
           radius: 15,
@@ -112,7 +132,7 @@ Workspace.controller('AnnotationDetailsCtrl', [
       });
     };
     timeoutFunc = function() {
-      var annotationSpec, canvasContents, dropPoint;
+      var annotationSpec;
       $scope.events.push({
         id: $scope.eventIndex++,
         text: 'Object added!'
@@ -125,28 +145,63 @@ Workspace.controller('AnnotationDetailsCtrl', [
         comment: $scope.newCommentText
       };
       $scope.addComment();
-      canvasContents = $scope.fabric.canvas.getObjects();
-      dropPoint = canvasContents[canvasContents.length - 1];
       $scope.fabric.canvas.add(commentPin());
       $scope.annotations.push(annotationSpec);
       $scope.currentAnnotationGroup = [];
       $scope.$apply();
       return em.unit;
     };
-    $scope.fabric.canvas.on('mouse:down', function() {
+    $scope.fabric.canvas.on('mouse:down', function(e) {
+      var pointer, _ref, _ref1;
       if ($scope.annotationAction !== null) {
         $timeout.cancel($scope.annotationAction);
-        return em.unit;
       }
+      pointer = $scope.fabric.canvas.getPointer(e.e);
+      self.origX = pointer.x;
+      self.origY = pointer.y;
+      if ((_ref = $scope.currentTool) != null) {
+        if ((_ref1 = _ref.events) != null) {
+          if (typeof _ref1.mousedown === "function") {
+            _ref1.mousedown(e, $scope.fabric.canvas);
+          }
+        }
+      }
+      return em.unit;
     });
     $scope.fabric.canvas.on('mouse:up', function(e) {
+      var _ref, _ref1;
       $scope.annotationAction = $timeout(timeoutFunc, 2000);
+      if ((_ref = $scope.currentTool) != null) {
+        if ((_ref1 = _ref.events) != null) {
+          if (typeof _ref1.mouseup === "function") {
+            _ref1.mouseup(e, $scope.fabric.canvas);
+          }
+        }
+      }
+      return em.unit;
+    });
+    $scope.fabric.canvas.on('mouse:move', function(e) {
+      var _ref, _ref1;
+      if ((_ref = $scope.currentTool) != null) {
+        if ((_ref1 = _ref.events) != null) {
+          if (typeof _ref1.mousemove === "function") {
+            _ref1.mousemove(e, $scope.fabric.canvas);
+          }
+        }
+      }
       return em.unit;
     });
     $scope.fabric.canvas.on('object:added', function(obj) {
-      $scope.currentAnnotationGroup.push(obj);
-      return em.unit;
+      return $scope.currentAnnotationGroup.push(obj);
     });
+    if ((_ref = $scope.currentTool) != null) {
+      if ((_ref1 = _ref.events) != null) {
+        if (typeof _ref1.objectadded === "function") {
+          _ref1.objectadded(e, $scope.fabric.canvas);
+        }
+      }
+    }
+    em.unit;
     return em.unit;
   }
 ]);
