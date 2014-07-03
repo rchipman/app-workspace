@@ -19,8 +19,11 @@
         <li ng-click="selectTool('zoom')" ng-class="{ 'active': currentTool.name == 'zoom' }">
             <svg class="icon icon-zoom-in" viewBox="0 0 32 32"><use xlink:href="#icon-zoom-in"></use></svg>
         </li>
-        <li ng-click="selectTool('comment')" ng-class="{ 'active': currentTool.name == 'comment' }" class="last">
+        <li ng-click="selectTool('comment')" ng-class="{ 'active': currentTool.name == 'comment' }">
             <svg class="icon icon-comment" viewBox="0 0 32 32"><use xlink:href="#icon-comment"></use></svg>
+        </li>
+        <li ng-click="loadImages()" class="last">
+            <svg class="icon icon-load-images" viewBox="0 0 32 32"><use xlink:href="#icon-load-images"></use></svg>
         </li>
         <!--
         <li class="comment" ng-click="selectTool('comment')"><span class="icon glyphicon glyphicon-pushpin"></span></li>
@@ -40,10 +43,10 @@
                     <li class="previous">
                         <svg class="icon icon-arrow-left" viewBox="0 0 32 32"><use xlink:href="#icon-arrow-left"></use></svg>
                     </li>
-                    <li ng-repeat="thumb in thumbs">
-
-                    	<img class="thumbnail" display="table-cell;" ng-src="{{thumb}}"></img>
-
+                    <li ng-repeat="thumb in thumbs" class="thumb clearfix" ng-class="{'active': currentAnnotation.annotation.id === thumb.id}">
+                    	<a ui-sref="app.annotations.details({annotationID: thumb.id})">
+                            <img ng-src="{{thumb.src}}"></img>
+                        </a>
                     </li>
                     <li class="next icon-arrow-right">
                         <svg class="icon icon-arrow-right" viewBox="0 0 32 32"><use xlink:href="#icon-arrow-right"></use></svg>
@@ -54,35 +57,34 @@
         </div>
         <div class="col-md-3">
             <ul class="comment-list">
-                <li class="user-input clearfix" ng-if="readyForComment">
+                <li class="user-input clearfix" ng-show="readyToComment">
                     <form id="annotation-input">
-                        <textarea name="user-input" rows="8" cols="40" ng-model="newCommentText"></textarea>
+                        <textarea id="user-comment-input" name="user-input" rows="8" cols="40" ng-model="newCommentText"></textarea>
                         <div class="pull-right">
-                            <button name="user-approve" class="btn btn-default"><i class="approve glyphicon glyphicon-remove-circle"></i></button>
-                            <button name="user-reject" class="btn btn-default"><i class="reject glyphicon glyphicon-ok-circle"></i></button>
+                            <button name="user-add-comment" class="btn btn-danger" ng-click="cancelComment()">Cancel</button>
                             <button type="submit" name="user-add-comment" class="btn btn-primary" ng-click="addComment()">Add Comment</button>
                         </div>
                     </form>
                 </li>
-                <li class="seperator" ng-if="readyForComment"></li>
-                <li ng-repeat="comment in comments" class="comment {{comment.type}}">
-                    <div ng-switch="comment.type">
+                <li class="separator" ng-show="readyToComment"></li>
+                <li ng-repeat="annotation in annotations" class="comment {{annotation.comment.type}}">
+                    <div ng-switch="annotation.comment.type">
                         <div ng-when="normal">
                             <div class="comment-holder">
                                 <div class="user-gravatar">
-                                    <img ng-src="http://www.gravatar.com/avatar/{{comment.email}}" alt="" />
+                                    <img ng-src="http://www.gravatar.com/avatar/{{annotation.user.email}}" alt="" />
                                 </div>
                                 <div class="comment-content">
-                                    <strong>{{comment.name}}</strong>
+                                    <strong>{{annotation.user.name}}</strong>
                                     <p>
-                                        {{comment.text}}
+                                        {{annotation.comment.text}}
                                     </p>
                                     </div>
                                 </div>
                                 <div class="comment-meta">
-                                    <span class="comment-id">{{comment.annotationId}}</span>
+                                    <span class="comment-id">{{annotation.id}}</span>
                                     <a href="#">remove</a>
-                                    <span class="comment-timestamp pull-right">{{comment.timestamp}}</span>
+                                    <span class="comment-timestamp pull-right">{{annotation.comment.timestamp}}</span>
                                 </div>
                             </div>
                         </div>

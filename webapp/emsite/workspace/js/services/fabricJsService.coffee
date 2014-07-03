@@ -5,18 +5,16 @@ Workspace.factory 'fabricJsService', () ->
 
     toolkit = [
         {
+            name: 'disabled'
+            properties: {
+                isDrawingMode: false
+            }
+            annotating: false,
+        },
+        {
             name: 'draw'
             properties: {
                 isDrawingMode: true # this may be the only thing necessary
-<<<<<<< HEAD
-                # freeDrawingBrush: {
-                #     color: '#fff000' # need to pick a color by picker
-                #     width: 5
-                #     shadowBlur: 0
-                # }
-=======
-                # freeDrawingBrush: some complicated object generation crap
->>>>>>> upstream/ws-5
             }
             annotating: true
         },
@@ -148,7 +146,7 @@ Workspace.factory 'fabricJsService', () ->
                                 delta = origX - pointer.x
                                 objects = canvas.getObjects()
                                 # needs changes !!!
-                                delta = Math.abs delta * SCALE_FACTOR
+                                delta = delta * SCALE_FACTOR
                                 transform = [1+delta,0,0,1+delta,0,0]
                                 console.log transform
                                 for klass in objects
@@ -162,8 +160,11 @@ Workspace.factory 'fabricJsService', () ->
                                     klass.transformMatrix = transform
                                     klass.setCoords()
                                 # can we also transform the canvas background?
-                                # canvas.backgroundImage.transformMatrix = transform  # works
-                                # canvas.transformMatrix = transform                  # doesn't work
+                                canvas.backgroundImage.transformMatrix = transform  # works
+                                canvas.setWidth canvas.backgroundImage.width * canvas.backgroundImage.transformMatrix[0]
+                                canvas.setHeight canvas.backgroundImage.height * canvas.backgroundImage.transformMatrix[3]
+                                # apparently, yes!
+                                # works great but doesn't affect pins yet
                         mousedown: (o, canvas) ->
                             self.origX = canvas.getPointer(o.e).x
                     }
@@ -212,6 +213,7 @@ Workspace.factory 'fabricJsService', () ->
                 canvas.setWidth realImage.width
                 canvas.setHeight realImage.height
                 # fourth/fifth steps?  Try changing the size of the canvas to the image's dimensions
+                center = canvas.getCenter()
                 canvas.setBackgroundImage realImage, canvas.renderAll.bind canvas
                 em.unit
 

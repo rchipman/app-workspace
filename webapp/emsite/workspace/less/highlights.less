@@ -26,6 +26,10 @@ body {
     &.btn-primary {
         background-color: #68a8c1;
         border: 1px solid #41768b;
+
+        &:hover {
+            background-color: darken(#68a8c1, 5%);
+        }
     }
 
     &.btn-default {
@@ -33,7 +37,6 @@ body {
         border: 1px solid #ddd;
     }
 }
-
 
 /* Annotations Specific */
 
@@ -140,11 +143,30 @@ body {
         list-style: none;
 
         li {
-            width: 80px;
             height: 60px;
             background: #fff;
             float: left;
             margin: 15px 0 0 12px;
+            text-align: center;
+            border-radius: 0;
+
+
+            &.thumb {
+                padding: 5px;
+
+                img {
+                    height: 100%;
+                    padding: 0;
+                }
+
+                &:hover {
+                    background: #fff;
+                }
+
+                &.active {
+                    background: #abdcef;
+                }
+            }
 
             &.previous,
             &.next {
@@ -213,7 +235,7 @@ body {
             }
         }
 
-        &.seperator {
+        &.separator {
             background: #41768b;
             margin: 30px 0;
             height: 1px;

@@ -11,54 +11,74 @@
 # working js file is located at AnnotationDetailsCtrl_orig.js
 # this is a buggy CoffeeScript
 Workspace.controller 'AnnotationDetailsCtrl',
-['$scope', '$stateParams', '$timeout', 'annotationService', 'fabricJsService',
-($scope, $stateParams, $timeout, annotationService, fabricJsService) ->
+['$rootScope', '$scope', '$stateParams', '$timeout', 'annotationService', 'fabricJsService',
+($rootScope, $scope, $stateParams, $timeout, annotationService, fabricJsService) ->
+
+	$rootScope.$broadcast 'navigatedTo', 'Annotations'
+	$scope.color = '#000fff'
+	$scope.brushWidth = 5
 	self.mouseDown = null # look I defined this here in the controller, this is probably bad !!!
 	self.origX = 0 # !!!
 	self.origY = 0 # !!!
-	$scope.currentCommentIndex = 3 # should probably be deprecated to have annotation index tied to comment index
+	$scope.currentCommentIndex = 1 # should probably be deprecated to have annotation index tied to comment index
 	$scope.newCommentText = null
-	$scope.thumbs = []
-	$scope.approvalHash = {} # empty obj for user: approval kv pairs
-	# placeholder JSON function
-
-	comment = 
-	{
+	$scope.annotations = []		# holds all annotation groups (should be one per unique annotation w/ comment)
+	metaUser =
 		type: 'normal'
 		name: 'Rob'
 		email: md5 'jrchipman1@gmail.com'
-		text: 'This is a comment that some dude left on here. cool.'
-		annotationId: 3
-		timestamp: moment().fromNow()
-	}
 
-	comment2 =
-	{
-		type: 'normal'
-		name: 'Chris'
-		email: md5 'test@gmail.com'
-		text: 'Hey, what about the thing on the right here, don\'t forget to do the stuff.'
-		annotationId: 2
-		timestamp: moment().subtract('minutes', 30).fromNow()
-	}
+	$scope.currentUser = metaUser
+	$scope.events = []			# events attribute holds information about the unique event
+	$scope.comments = [] # probably deprecated
+	# $scope.thumbs = []
+	# $scope.approvalHash = {} # empty obj for user: approval kv pairs
 
-	comment3 =
-	{
-		type: 'normal'
-		name: 'Adam'
-		email: md5 'test@gmail.com'
-		text: 'I dont feel like the sky is as blue as it could be, perhaps we should revisit?'
-		annotationId: 1
-		timestamp: moment().subtract('days', 1).fromNow()
-	}
+	$scope.thumbs = [
+		{ name: 'Maybe Art', src: 'img/BlueBus.jpg', id: 104 }
+		{ name: 'Stupid Art', src: 'img/ForMom.jpg', id: 101 }
+		{ name: 'Nice Art', src: 'img/FenceDog.jpg', id: 102 }
+		{ name: 'Great Art', src: 'img/TigerTug.jpg', id: 103 }
+	]
+
+
+
+	# comment =
+	# {
+	# 	type: 'normal'
+	# 	name: 'Rob'
+	# 	email: md5 'jrchipman1@gmail.com'
+	# 	text: 'This is a comment that some dude left on here. cool.'
+	# 	annotationId: 3
+	# 	timestamp: moment().fromNow()
+	# }
+
+	# comment2 =
+	# {
+	# 	type: 'normal'
+	# 	name: 'Chris'
+	# 	email: md5 'test@gmail.com'
+	# 	text: 'Hey, what about the thing on the right here, don\'t forget to do the stuff.'
+	# 	annotationId: 2
+	# 	timestamp: moment().subtract('minutes', 30).fromNow()
+	# }
+
+	# comment3 =
+	# {
+	# 	type: 'normal'
+	# 	name: 'Adam'
+	# 	email: md5 'test@gmail.com'
+	# 	text: 'I dont feel like the sky is as blue as it could be, perhaps we should revisit?'
+	# 	annotationId: 1
+	# 	timestamp: moment().subtract('days', 1).fromNow()
+	# }
 
 	# Highlights UI stuff, to be deleted
-	$scope.comments = [comment,comment2,comment3]
-	$scope.approved = [1..4]	# deprecated? unless property approach more favored in angular vs methods?
-	$scope.rejected = [1]		# deprecated? maybe not since method method doesn't work?
-	$scope.images = [1..6]		# deprecated but so is below line since thumb generation is free from EM
-	$scope.collectionid = 102
-	$scope.loadImages = (collectionid) ->
+	# $scope.comments = [comment,comment2,comment3]
+	# $scope.approved = [1..4]	# deprecated? unless property approach more favored in angular vs methods?
+	# $scope.rejected = [1]		# deprecated? maybe not since method method doesn't work?
+	# $scope.images = [1..6]		# deprecated but so is below line since thumb generation is free from EM
+	$scope.loadImages = () ->
 		markers = {
 			"query": [
 				{
@@ -94,9 +114,11 @@ Workspace.controller 'AnnotationDetailsCtrl',
 				$.each data.results, (index, obj) ->
 					# this path should be changed according to the specifications above
 					path = "http://localhost:8080/emshare/views/modules/asset/downloads/preview/thumbsmall/#{obj.sourcepath}/thumb.jpg"
-					$scope.thumbs.push path
+					console.log path
+					# $scope.thumbs.push path
 					console.log fabric.util.loadImage path, (src) ->
-						$scope.fabric.canvas.add new fabric.Image(src)
+						# $scope.fabric.canvas.add new fabric.Image(src)
+						em.unit
 					em.unit
 				em.unit
 			,
@@ -106,19 +128,28 @@ Workspace.controller 'AnnotationDetailsCtrl',
 			}
 		em.unit
 
-	
+	$scope.addComment = () ->
+		pin = commentPin()
+		$scope.currentAnnotationGroup.push pin
+		pinnedGroup = new fabric.Group $scope.currentAnnotationGroup
+		$scope.fabric.canvas.add pinnedGroup
+		$scope.origX = null
+		$scope.origY = null
+		annotationSpec =
+			id: $scope.currentCommentIndex++
+			group: $scope.currentAnnotationGroup
+			user: $scope.currentUser
+			comment:
+				type: 'normal'
+				text: $scope.newCommentText
+				timestamp: moment().fromNow()
 
-	$scope.addComment =
-	() ->
-		$scope.comments.unshift {
-			type: 'normal'
-			name: 'Rob'
-			email: md5 'jrchipman1@gmail.com'
-			text: $scope.newCommentText
-			annotationId: ++$scope.currentCommentIndex
-			timestamp: moment().fromNow()
-		}
+		# now push annotation info to scope for longer-term tracking
+		# console.log annotationSpec
+		$scope.annotations.unshift annotationSpec
+		$scope.currentAnnotationGroup = []
 		$scope.newCommentText = null
+		$scope.readyToComment = false
 		em.unit
 
 	$scope.selectTool = (toolname) ->
@@ -127,34 +158,20 @@ Workspace.controller 'AnnotationDetailsCtrl',
 		for prop of $scope.currentTool.properties
 			$scope.fabric.canvas[prop] = $scope.currentTool.properties[prop]
 		# this shit is broke !!!
-		# if $scope.currentTool.name is 'draw'
-		# 	if $scope.fabric.canvas.freeDrawingBrush is not undefined
-		# 		$scope.fabric.canvas.freeDrawingBrush.set {
-			#  		width: 5
-			#  		color: '#fff000'
-			#  		shadowBlur: 0
-			#  	}
-			#  else
-			#  	$scope.fabric.canvas.freeDrawingBrush = new fabric.PencilBrush
-		# 		$scope.fabric.canvas.freeDrawingBrush.set {
-			#  		width: 5
-			#  		color: '#fff000'
-			#  		shadowBlur: 0
-			#  	}
+		if $scope.currentTool.name is 'draw'
+			$scope.fabric.canvas.freeDrawingBrush.color = $scope.color
+			$scope.fabric.canvas.freeDrawingBrush.width = $scope.brushWidth
 		em.unit
 
-	$scope.setApproval = (user, approvalState) ->
-		$scope.approvalHash[user] = approvalState # totally unsafe
+	# $scope.setApproval = (user, approvalState) ->
+	# 	$scope.approvalHash[user] = approvalState # totally unsafe
 
-	$scope.getApprovals = () ->
-		(user for user of $scope.approvalHash when $scope.approvalHash[user] is true)
+	# $scope.getApprovals = () ->
+	# 	(user for user of $scope.approvalHash when $scope.approvalHash[user] is true)
 
-	$scope.getRejections =
-	() ->
-		(user for user of $scope.approvalHash when $scope.approvalHash[user] is false)
-
-	$scope.annotations = []		# holds all annotation groups (should be one per unique annotation w/ comment)
-	$scope.events = []			# events attribute holds information about the unique event
+	# $scope.getRejections =
+	# () ->
+	# 	(user for user of $scope.approvalHash when $scope.approvalHash[user] is false)
 	usefulKeys = ['']			# i dunno
 	$scope.currentAnnotation = _.find annotationService.mockData,
 	(item) ->
@@ -178,54 +195,53 @@ Workspace.controller 'AnnotationDetailsCtrl',
 	the pin should be rendered on screen somewhere appropriate and...
 	the comment should be added to scope with annotationGroup data to be attached to comment
 	###
-
+	$scope.cancelComment = () ->
+		console.log $scope.currentAnnotationGroup
+		console.log $scope.currentAnnotationGroupId
+		console.log $scope.currentCommentIndex
+		console.log $scope.annotations
 
 
 	commentPin = () ->
 		# should handle this drop point some better way
 		# currently this method does not support the use of the comment tool (irony)
 
-		new fabric.Group [new fabric.Circle({
-				radius: 15
-				fill: "#000fff"
-				borderColor: "#fff"
-			}),
+		# also this needs to be fixed to use a properly bordered circle instead of two circles
+		new fabric.Group [
+			new fabric.Circle({
+				radius: 18.5
+				fill: "#fff"
+			})
 
+			new fabric.Circle({
+				radius: 14
+				fill: "#4fabe5"
+				top: 5
+				left: 5
+			})
+			,
 			new fabric.Text $scope.currentCommentIndex.toString(),
 				{
-					fontSize: 30
-					color: "#ffffff"
-					left: 5
-					top: -5
+					fontSize: 20
+					fill: "#fff"
+					left: 13
+					top: 4
 				}
 		],
 			{
 				evented: false
-				top: $scope.origX
-				left: $scope.origY
+				# top: $scope.origX
+				# left: $scope.origY
+				originX: 'center'
+				originY: 'center'
 			}
 
 	timeoutFunc = () ->
-		$scope.events.push {id: $scope.eventIndex++,  text: 'Object added!'}
+		$scope.events.push {id: $scope.eventIndex += 1,  text: 'Object added!'}
 		# lazy prompting and comment addition
-		$scope.newCommentText = prompt "Enter a comment:" || "<no comment?>"
-		# add little pin to canvas???
-		annotationSpec =
-		{
-			id: $scope.currentCommentIndex+1
-			group: $scope.currentAnnotationGroup
-			user: $scope.currentUser
-			comment: $scope.newCommentText
-		}
-		$scope.addComment()
-		# oh please tell me there is a non-ugly way to do this (I bet that's what Coffee is for)
-
-		# fix this ^^^
-		$scope.fabric.canvas.add commentPin()
-		# now push annotation info to scope for longer-term tracking
-		$scope.annotations.push annotationSpec
-		$scope.currentAnnotationGroup = []
-		# alert("You added an object group!");
+		$scope.readyToComment = true
+		$timeout (() -> $('#user-comment-input').focus()), 100
+		$scope.selectTool 'disabled'
 		$scope.$apply()  # is this even necessary here?
 		em.unit
 
@@ -238,25 +254,27 @@ Workspace.controller 'AnnotationDetailsCtrl',
 		self.origY = pointer.y
 		$scope.currentTool.events?.mousedown? e, $scope.fabric.canvas
 		em.unit
+
 	$scope.fabric.canvas.on 'mouse:up', (e) ->
 		self.mouseDown = false
 		if $scope.currentTool.annotating
-			# MUST RE-ENABLE THIS !!!
-			# $scope.annotationAction = 
-			# 	$timeout timeoutFunc, 2000
+			$scope.annotationAction = $timeout timeoutFunc, 2000
 		$scope.currentTool.events?.mouseup? e, $scope.fabric.canvas
 		em.unit
+
 	$scope.fabric.canvas.on 'mouse:move', (e) ->
 		$scope.currentTool.events?.mousemove? e, $scope.fabric.canvas
 		em.unit
 
 	$scope.fabric.canvas.on 'object:added', (obj) ->
 		if $scope.currentTool.annotating
-			$scope.currentAnnotationGroup.push obj
+			$scope.currentAnnotationGroup.push obj.target
 		$scope.currentTool.events?.objectadded? obj, $scope.fabric.canvas
 		# this may not be the best place for these, but it needs to happen somewhat regularly
 		$scope.fabric.canvas.renderAll()
 		$scope.fabric.canvas.calcOffset()
+		$scope.origX = obj.target.top - 15 if !$scope.origX
+		$scope.origY = obj.target.left - 15 if !$scope.origY
 		em.unit
 	em.unit
 ]
