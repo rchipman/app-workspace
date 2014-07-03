@@ -13,12 +13,38 @@
 Workspace.controller 'AnnotationDetailsCtrl', 
 ['$scope', '$stateParams', '$timeout', 'annotationService', 'fabricJsService',
 ($scope, $stateParams, $timeout, annotationService, fabricJsService) ->
-	self.mouseDown = null # look I defined this here in the controller, this is probably bad
+	self.mouseDown = null # look I defined this here in the controller, this is probably bad !!!
 	self.origX = 0 # !!!
 	self.origY = 0 # !!!
 	$scope.currentCommentIndex = 3 # should probably be deprecated to have annotation index tied to comment index
 	$scope.newCommentText = null
 	$scope.approvalHash = {} # empty obj for user: approval kv pairs
+	# placeholder JSON function
+	markers = { 
+                "query": [
+                    {
+                        "field": "id"
+                        "operator": "matches"
+                        "values": [
+                            "*"                            
+                        ]
+                    }
+                    
+                ]
+    }
+
+    $scope.doJSON = () -> 
+        $.ajax({
+            type: "POST"
+            url: "/entermedia/services/json/search/data/asset?catalogid=media/catalogs/public"
+            data: markers
+            contentType: "application/json; charset=utf-8"
+            dataType: "json"
+            success: (data) ->
+                alert data
+            failure: (errMsg) ->
+                alert errMsg
+        })
 
 	comment = 
 	{
@@ -55,7 +81,36 @@ Workspace.controller 'AnnotationDetailsCtrl',
 	$scope.approved = [1..4]	# deprecated? unless property approach more favored in angular vs methods?
 	$scope.rejected = [1]		# deprecated? maybe not since method method doesn't work?
 	$scope.images = [1..6]		# deprecated but so is below line since thumb generation is free from EM
-	$scope.thumbs = ['img/thumbs/BlueBus.gif','img/thumbs/ForMom.gif','img/thumbs/Baseball-Player.gif','img/thumbs/FenceDog.gif','img/thumbs/TigerTug.gif','img/thumbs/hs-2003-28-a-1280x768_wallpaper.gif']
+	loadImages = (collectionid) ->
+			markers = {
+				"query": [
+					{
+						"field": "id"
+						"operator": "matches"
+						"values": ["*"]
+		    		}
+				]
+			}
+		# applicationid = /emsite/workspace
+		# #{applicationid}/views/modules/asset/downloads/preview/thumbsmall/#{more.sourcepath}/thumb.jpg
+		$scope.doJSON = () ->
+			$.ajax {
+				type: "POST",
+				url: "/entermedia/services/json/search/data/asset?catalogid=media/catalogs/public",
+				data: JSON.stringify(markers),
+				contentType: "application/json; charset=utf-8",
+				dataType: "json",
+				async: false,
+				success: (data) ->
+					tempArray = $.each data.results, (index, more) ->
+				    	more.sourcepath
+				   	$scope.thumbs = tempArray
+				,
+				failure: (errMsg) ->
+					alert errMsg
+				}
+
+	
 
 	$scope.addComment =
 	() ->
@@ -115,6 +170,8 @@ Workspace.controller 'AnnotationDetailsCtrl',
     the pin should be rendered on screen somewhere appropriate and...
     the comment should be added to scope with annotationGroup data to be attached to comment
 	###
+
+
 
 	commentPin = () ->
 		dropPoint = $scope.fabric.canvas.getObjects()[$scope.fabric.canvas.getObjects().length-1]

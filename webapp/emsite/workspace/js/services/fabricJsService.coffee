@@ -2,11 +2,17 @@ Workspace.factory 'fabricJsService', () ->
     globscale = 1
     getSelf = (name) ->
         _.find(toolkit, name: name)
+
     toolkit = [
         {
             name: 'draw'
             properties: {
                 isDrawingMode: true # this may be the only thing necessary
+                freeDrawingBrush: {
+                    color: '#fff000' # need to pick a color by picker
+                    width: 5
+                    shadowBlur: 0
+                }
             }
             annotating: true
         },
@@ -167,7 +173,7 @@ Workspace.factory 'fabricJsService', () ->
     init: (path) ->
         returnCanvas = {}
         (() ->
-            docGet = (id) ->
+            docGet = (id) -> # do we need this anymore?
                 document.getElementById id
 
             canvas = @__canvas = new fabric.Canvas 'annotation_canvas'

@@ -2,13 +2,37 @@
 
 Workspace.controller('AnnotationDetailsCtrl', [
   '$scope', '$stateParams', '$timeout', 'annotationService', 'fabricJsService', function($scope, $stateParams, $timeout, annotationService, fabricJsService) {
-    var comment, comment2, comment3, commentPin, timeoutFunc, usefulKeys;
+    var comment, comment2, comment3, commentPin, loadImages, markers, timeoutFunc, usefulKeys;
     self.mouseDown = null;
     self.origX = 0;
     self.origY = 0;
     $scope.currentCommentIndex = 3;
     $scope.newCommentText = null;
     $scope.approvalHash = {};
+    markers = {
+      "query": [
+        {
+          "field": "id",
+          "operator": "matches",
+          "values": ["*"]
+        }
+      ]
+    };
+    $scope.doJSON = function() {
+      return $.ajax({
+        type: "POST",
+        url: "/entermedia/services/json/search/data/asset?catalogid=media/catalogs/public",
+        data: markers,
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function(data) {
+          return alert(data);
+        },
+        failure: function(errMsg) {
+          return alert(errMsg);
+        }
+      });
+    };
     comment = {
       type: 'normal',
       name: 'Rob',
@@ -37,7 +61,37 @@ Workspace.controller('AnnotationDetailsCtrl', [
     $scope.approved = [1, 2, 3, 4];
     $scope.rejected = [1];
     $scope.images = [1, 2, 3, 4, 5, 6];
-    $scope.thumbs = ['img/thumbs/BlueBus.gif', 'img/thumbs/ForMom.gif', 'img/thumbs/Baseball-Player.gif', 'img/thumbs/FenceDog.gif', 'img/thumbs/TigerTug.gif', 'img/thumbs/hs-2003-28-a-1280x768_wallpaper.gif'];
+    loadImages = function(collectionid) {
+      return markers = {
+        "query": [
+          {
+            "field": "id",
+            "operator": "matches",
+            "values": ["*"]
+          }
+        ]
+      };
+    };
+    $scope.doJSON = function() {
+      return $.ajax({
+        type: "POST",
+        url: "/entermedia/services/json/search/data/asset?catalogid=media/catalogs/public",
+        data: JSON.stringify(markers),
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        async: false,
+        success: function(data) {
+          var tempArray;
+          tempArray = $.each(data.results, function(index, more) {
+            return more.sourcepath;
+          });
+          return $scope.thumbs = tempArray;
+        },
+        failure: function(errMsg) {
+          return alert(errMsg);
+        }
+      });
+    };
     $scope.addComment = function() {
       $scope.comments.unshift({
         type: 'normal',

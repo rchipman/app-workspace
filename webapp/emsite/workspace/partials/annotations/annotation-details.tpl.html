@@ -1,27 +1,27 @@
 <!-- fabric formatting stuff... probably does not belong here -->
 
     <ul class="annotations-toolbar">
-        <li class="move" ng-click="selectTool('move')"><span class="icon glyphicon glyphicon-screenshot"></span></li>
+        <li class="comment" ng-click="selectTool('comment')"><span class="icon glyphicon glyphicon-screenshot"></span></li>
         <li class="draw" ng-click="selectTool('draw')"><span class="icon glyphicon glyphicon-pencil"></span></li>
         <li class="shape" ng-click="selectTool('shape')"><span class="icon glyphicon glyphicon-unchecked"></span></li>
 
-        <li class="comment" ng-click="selectTool('comment')"><span class="icon glyphicon glyphicon-pushpin"></span></li>
+        <!-- <li class="comment" ng-click="selectTool('comment')"><span class="icon glyphicon glyphicon-pushpin"></span></li> -->
         <li class="arrow" ng-click="selectTool('arrow')"><span class="icon glyphicon glyphicon-arrow-right"></span></li>
         <li class="text" ng-click="selectTool('text')"><span class="icon glyphicon glyphicon-font"></span></li>
         <li class="zoom" ng-click="selectTool('zoom')"><span class="icon glyphicon glyphicon-zoom-in"></span></li>
-        <li class="colorpicker" ng-click="selectTool('colorpicker')"><span class="icon glyphicon glyphicon-tint colorpicker"></span></li>
-        <li class="comments">
+        <!-- <li class="colorpicker" ng-click="selectTool('colorpicker')"><span class="icon glyphicon glyphicon-tint colorpicker"></span></li> -->
+        <!-- <li class="comments">
             <span class="icon glyphicon glyphicon-comment"></span>
             <span class="additional-info">{{comments.length}}</span>
-        </li>
-        <li class="approved">
+        </li> -->
+        <!-- <li class="approved">
             <span class="icon glyphicon glyphicon-thumbs-up"></span>
             <span class="additional-info">{{getApprovals().length}}</span>
         </li>
         <li class="rejected">
             <span class="icon glyphicon glyphicon-thumbs-down"></span>
             <span class="additional-info">{{getRejections().length}}</span>
-        </li>
+        </li> -->
     </ul>
     <div class="row">
         <div class="col-md-9">
@@ -43,17 +43,19 @@
         </div>
         <div class="col-md-3">
             <ul class="comment-list">
-                <li class="user-input clearfix">
+                <!-- <li class="user-input clearfix">
                     <form id="annotation-input">
                         <textarea name="user-input" rows="8" cols="40" ng-model="newCommentText"></textarea>
                         <div class="pull-right">
                             <button name="user-approve" class="btn btn-default"><i class="approve glyphicon glyphicon-remove-circle"></i></button>
                             <button name="user-reject" class="btn btn-default"><i class="reject glyphicon glyphicon-ok-circle"></i></button>
                             <button type="submit" name="user-add-comment" class="btn btn-primary" ng-click="addComment()">Add Comment</button>
+                            INSTEAD OF COMMENT ADDITION INTERFACE, INDIVIDUAL COMMENTS
+                                SHOULD JUST BE EDITABLE, text area in comment when clicked upon
                         </div>
                     </form>
                 </li>
-                <li class="seperator"></li>
+                <li class="seperator"></li> -->
                 <li ng-repeat="comment in comments" class="comment {{comment.type}}">
                     <div ng-switch="comment.type">
                         <div ng-when="normal">
@@ -70,6 +72,7 @@
                                 </div>
                                 <div class="comment-meta">
                                     <span class="comment-id">{{comment.annotationId}}</span>
+                                    <a href="#">remove</a>
                                     <span class="comment-timestamp pull-right">{{comment.timestamp}}</span>
                                 </div>
                             </div>

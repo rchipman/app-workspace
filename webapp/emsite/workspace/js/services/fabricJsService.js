@@ -12,7 +12,12 @@ Workspace.factory('fabricJsService', function() {
     {
       name: 'draw',
       properties: {
-        isDrawingMode: true
+        isDrawingMode: true,
+        freeDrawingBrush: {
+          color: '#fff000',
+          width: 5,
+          shadowBlur: 0
+        }
       },
       annotating: true
     }, {
