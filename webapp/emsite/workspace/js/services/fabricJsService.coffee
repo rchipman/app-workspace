@@ -8,11 +8,7 @@ Workspace.factory 'fabricJsService', () ->
             name: 'draw'
             properties: {
                 isDrawingMode: true # this may be the only thing necessary
-                freeDrawingBrush: {
-                    color: '#fff000' # need to pick a color by picker
-                    width: 5
-                    shadowBlur: 0
-                }
+                # freeDrawingBrush: some complicated object generation crap
             }
             annotating: true
         },
@@ -35,13 +31,13 @@ Workspace.factory 'fabricJsService', () ->
             drawparams: [
                 (pointer) ->
                     {
-                        radius: Math.abs(self.origX - pointer.x)
+                        radius: Math.abs self.origX - pointer.x
                     }
                 ,
                 (pointer) ->
                     {
-                        width: -(self.origX - pointer.x),
-                        height: -(self.origY - pointer.y)
+                        width: -self.origX + pointer.x
+                        height: -self.origY + pointer.y
                     }
             ]
             blanks: [
@@ -144,7 +140,7 @@ Workspace.factory 'fabricJsService', () ->
                                 delta = origX - pointer.x
                                 objects = canvas.getObjects()
                                 # needs changes !!!
-                                delta = Math.abs(delta * SCALE_FACTOR)
+                                delta = Math.abs delta * SCALE_FACTOR
                                 transform = [1+delta,0,0,1+delta,0,0]
                                 console.log transform
                                 for klass in objects
@@ -166,6 +162,16 @@ Workspace.factory 'fabricJsService', () ->
                 },
                 {
                     name: 'colorpicker' # no implementation $$$
+                    properties: {}
+                    annotating: false
+                },
+                {
+                    name: 'load' # temporary?
+                    properties: {}
+                    annotating: false
+                },
+                {
+                    name: 'export'
                     properties: {}
                     annotating: false
                 }

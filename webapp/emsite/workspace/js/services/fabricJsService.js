@@ -12,12 +12,7 @@ Workspace.factory('fabricJsService', function() {
     {
       name: 'draw',
       properties: {
-        isDrawingMode: true,
-        freeDrawingBrush: {
-          color: '#fff000',
-          width: 5,
-          shadowBlur: 0
-        }
+        isDrawingMode: true
       },
       annotating: true
     }, {
@@ -41,8 +36,8 @@ Workspace.factory('fabricJsService', function() {
           };
         }, function(pointer) {
           return {
-            width: -(self.origX - pointer.x),
-            height: -(self.origY - pointer.y)
+            width: -self.origX + pointer.x,
+            height: -self.origY + pointer.y
           };
         }
       ],
@@ -151,6 +146,14 @@ Workspace.factory('fabricJsService', function() {
       }
     }, {
       name: 'colorpicker',
+      properties: {},
+      annotating: false
+    }, {
+      name: 'load',
+      properties: {},
+      annotating: false
+    }, {
+      name: 'export',
       properties: {},
       annotating: false
     }

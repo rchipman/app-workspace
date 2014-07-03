@@ -18,33 +18,9 @@ Workspace.controller 'AnnotationDetailsCtrl',
 	self.origY = 0 # !!!
 	$scope.currentCommentIndex = 3 # should probably be deprecated to have annotation index tied to comment index
 	$scope.newCommentText = null
+	$scope.thumbs = []
 	$scope.approvalHash = {} # empty obj for user: approval kv pairs
 	# placeholder JSON function
-	markers = { 
-                "query": [
-                    {
-                        "field": "id"
-                        "operator": "matches"
-                        "values": [
-                            "*"                            
-                        ]
-                    }
-                    
-                ]
-    }
-
-    $scope.doJSON = () -> 
-        $.ajax({
-            type: "POST"
-            url: "/entermedia/services/json/search/data/asset?catalogid=media/catalogs/public"
-            data: markers
-            contentType: "application/json; charset=utf-8"
-            dataType: "json"
-            success: (data) ->
-                alert data
-            failure: (errMsg) ->
-                alert errMsg
-        })
 
 	comment = 
 	{
@@ -81,34 +57,54 @@ Workspace.controller 'AnnotationDetailsCtrl',
 	$scope.approved = [1..4]	# deprecated? unless property approach more favored in angular vs methods?
 	$scope.rejected = [1]		# deprecated? maybe not since method method doesn't work?
 	$scope.images = [1..6]		# deprecated but so is below line since thumb generation is free from EM
-	loadImages = (collectionid) ->
-			markers = {
-				"query": [
-					{
-						"field": "id"
-						"operator": "matches"
-						"values": ["*"]
-		    		}
-				]
+	$scope.collectionid = 102
+	$scope.loadImages = (collectionid) ->
+		markers = {
+			"query": [
+				{
+					"field": "id"
+					"operator": "matches"
+					"values": ["*"]
+		    	}
+			]
+		}
+
+		# applicationid = /emsite/workspace -- this is already added by the ajax request
+		# #{applicationid}/views/modules/asset/downloads/preview/thumbsmall/#{obj.sourcepath}/thumb.jpg
+		# the above should be the actual location of the thumbnail image
+		# this worked once:
+		# "/entermedia/services/json/search/data/asset?catalogid=media/catalogs/public"
+
+		# this is what emshare's asset thumb is:
+		# localhost:8080/emshare/views/modules/asset/downloads/preview/mediumplus/#{obj.sourcepath}/thumb.jpg
+		# this all temporarily works, but it isn't the way it should be in the end
+
+		# since JSON automatically adds the applicationid to the path, it doesn't get thumbs correctly
+		# when my assets are on emshare and my app is on emsite, so I hacked it to work for now
+
+		$.ajax {
+			type: "POST"
+			url: "/entermedia/services/json/search/data/asset?catalogid=media/catalogs/public"
+			data: JSON.stringify markers
+			contentType: "application/json; charset=utf-8"
+			dataType: "json"
+			async: false
+			success: (data) ->
+				tempArray = []
+				$.each data.results, (index, obj) ->
+					# this path should be changed according to the specifications above
+			    	path = "http://localhost:8080/emshare/views/modules/asset/downloads/preview/thumbsmall/#{obj.sourcepath}/thumb.jpg"
+			    	$scope.thumbs.push path
+			    	console.log fabric.util.loadImage path, (src) ->
+                		$scope.fabric.canvas.add new fabric.Image(src)
+			    	em.unit
+			   	em.unit
+			,
+			failure: (errMsg) ->
+				alert errMsg
+				em.unit
 			}
-		# applicationid = /emsite/workspace
-		# #{applicationid}/views/modules/asset/downloads/preview/thumbsmall/#{more.sourcepath}/thumb.jpg
-		$scope.doJSON = () ->
-			$.ajax {
-				type: "POST",
-				url: "/entermedia/services/json/search/data/asset?catalogid=media/catalogs/public",
-				data: JSON.stringify(markers),
-				contentType: "application/json; charset=utf-8",
-				dataType: "json",
-				async: false,
-				success: (data) ->
-					tempArray = $.each data.results, (index, more) ->
-				    	more.sourcepath
-				   	$scope.thumbs = tempArray
-				,
-				failure: (errMsg) ->
-					alert errMsg
-				}
+		em.unit
 
 	
 
@@ -130,19 +126,30 @@ Workspace.controller 'AnnotationDetailsCtrl',
         # do whatever else needs to happen !!!
         for prop of $scope.currentTool.properties
         	$scope.fabric.canvas[prop] = $scope.currentTool.properties[prop]
-        console.log $scope.currentTool
+        # this shit is broke !!!
+        # if $scope.currentTool.name is 'draw'
+        # 	if $scope.fabric.canvas.freeDrawingBrush is not undefined
+        # 		$scope.fabric.canvas.freeDrawingBrush.set {
+	       #  		width: 5
+	       #  		color: '#fff000'
+	       #  		shadowBlur: 0
+	       #  	}
+	       #  else
+	       #  	$scope.fabric.canvas.freeDrawingBrush = new fabric.PencilBrush
+        # 		$scope.fabric.canvas.freeDrawingBrush.set {
+	       #  		width: 5
+	       #  		color: '#fff000'
+	       #  		shadowBlur: 0
+	       #  	}
         em.unit
 
-	$scope.setApproval =
-	(user, approvalState) ->
+	$scope.setApproval = (user, approvalState) ->
 		$scope.approvalHash[user] = approvalState # totally unsafe
 
-	$scope.getApprovals =
-	() ->
+	$scope.getApprovals = () ->
 		(user for user of $scope.approvalHash when $scope.approvalHash[user] is true)
 
-	$scope.getRejections = 
-	() ->
+	$scope.getRejections = () ->
 		(user for user of $scope.approvalHash when $scope.approvalHash[user] is false)
 
 	$scope.annotations = []		# holds all annotation groups (should be one per unique annotation w/ comment)
@@ -150,10 +157,10 @@ Workspace.controller 'AnnotationDetailsCtrl',
 	usefulKeys = ['']			# i dunno
 	$scope.currentAnnotation = _.find annotationService.mockData, 
 	(item) ->
-		item.annotation.id is parseInt $stateParams.annotationID 
+		item.annotation.id is parseInt $stateParams.annotationID
 	# uses init function to create the fabric environment
 	$scope.fabric = fabricJsService.init $scope.currentAnnotation.annotation.path
-	$scope.selectTool('draw')
+	$scope.selectTool 'draw'
 	$scope.eventIndex = 0
 	$scope.annotationAction = null
 	$scope.currentAnnotationGroup = []
@@ -174,7 +181,6 @@ Workspace.controller 'AnnotationDetailsCtrl',
 
 
 	commentPin = () ->
-		dropPoint = $scope.fabric.canvas.getObjects()[$scope.fabric.canvas.getObjects().length-1]
 		# should handle this drop point some better way
 		# currently this method does not support the use of the comment tool (irony)
 
@@ -194,8 +200,8 @@ Workspace.controller 'AnnotationDetailsCtrl',
     	],
 		    {
 		        evented: false
-		        top: dropPoint.top
-		        left: dropPoint.left
+		        top: $scope.origX
+		        left: $scope.origY
 		    }
 
 	timeoutFunc = () ->
@@ -235,8 +241,9 @@ Workspace.controller 'AnnotationDetailsCtrl',
 	$scope.fabric.canvas.on 'mouse:up', (e) ->
 		self.mouseDown = false
 		if $scope.currentTool.annotating
-		  	$scope.annotationAction = 
-		  		$timeout timeoutFunc, 2000
+			# MUST RE-ENABLE THIS !!!
+		  	# $scope.annotationAction = 
+		  	# 	$timeout timeoutFunc, 2000
 	  	$scope.currentTool.events?.mouseup? e, $scope.fabric.canvas
 	  	em.unit
 	$scope.fabric.canvas.on 'mouse:move', (e) ->
