@@ -1,61 +1,70 @@
 <!-- fabric formatting stuff... probably does not belong here -->
 
     <ul class="annotations-toolbar">
-        <li class="comment" ng-click="selectTool('comment')"><span class="icon glyphicon glyphicon-screenshot"></span></li>
-        <li class="draw" ng-click="selectTool('draw')"><span class="icon glyphicon glyphicon-pencil"></span></li>
-        <li class="shape" ng-click="selectTool('shape')"><span class="icon glyphicon glyphicon-unchecked"></span></li>
-
-        <!-- <li class="comment" ng-click="selectTool('comment')"><span class="icon glyphicon glyphicon-pushpin"></span></li> -->
-        <li class="arrow" ng-click="selectTool('arrow')"><span class="icon glyphicon glyphicon-arrow-right"></span></li>
-        <li class="text" ng-click="selectTool('text')"><span class="icon glyphicon glyphicon-font"></span></li>
-        <li class="zoom" ng-click="selectTool('zoom')"><span class="icon glyphicon glyphicon-zoom-in"></span></li>
-        <!-- <li class="colorpicker" ng-click="selectTool('colorpicker')"><span class="icon glyphicon glyphicon-tint colorpicker"></span></li> -->
-        <!-- <li class="comments">
-            <span class="icon glyphicon glyphicon-comment"></span>
-            <span class="additional-info">{{comments.length}}</span>
-        </li> -->
-        <!-- <li class="approved">
-            <span class="icon glyphicon glyphicon-thumbs-up"></span>
-            <span class="additional-info">{{getApprovals().length}}</span>
+        <li ng-click="selectTool('move')" ng-class="{ 'active': currentTool.name == 'move' }">
+            <svg class="icon icon-move" viewBox="0 0 32 32"><use xlink:href="#icon-move"></use></svg>
         </li>
-        <li class="rejected">
-            <span class="icon glyphicon glyphicon-thumbs-down"></span>
-            <span class="additional-info">{{getRejections().length}}</span>
-        </li> -->
+        <li ng-click="selectTool('draw')" ng-class="{ 'active': currentTool.name == 'draw' }">
+            <svg class="icon icon-draw" viewBox="0 0 32 32"><use xlink:href="#icon-draw"></use></svg>
+        </li>
+        <li ng-click="selectTool('shape')" ng-class="{ 'active': currentTool.name == 'shape' }">
+            <svg class="icon icon-circle" viewBox="0 0 32 32"><use xlink:href="#icon-circle"></use></svg>
+        </li>
+        <li ng-click="selectTool('arrow')" ng-class="{ 'active': currentTool.name == 'arrow' }">
+            <svg class="icon icon-arrow" viewBox="0 0 32 32"><use xlink:href="#icon-arrow"></use></svg>
+        </li>
+        <li ng-click="selectTool('text')" ng-class="{ 'active': currentTool.name == 'text' }">
+            <svg class="icon icon-text" viewBox="0 0 32 32"><use xlink:href="#icon-text"></use></svg>
+        </li>
+        <li ng-click="selectTool('zoom')" ng-class="{ 'active': currentTool.name == 'zoom' }">
+            <svg class="icon icon-zoom-in" viewBox="0 0 32 32"><use xlink:href="#icon-zoom-in"></use></svg>
+        </li>
+        <li ng-click="selectTool('comment')" ng-class="{ 'active': currentTool.name == 'comment' }" class="last">
+            <svg class="icon icon-comment" viewBox="0 0 32 32"><use xlink:href="#icon-comment"></use></svg>
+        </li>
+        <!--
+        <li class="comment" ng-click="selectTool('comment')"><span class="icon glyphicon glyphicon-pushpin"></span></li>
+        <li class="colorpicker" ng-click="selectTool('colorpicker')"><span class="icon glyphicon glyphicon-tint colorpicker"></span></li>
+        <li class="comments"><span class="icon glyphicon glyphicon-comment"></span><span class="additional-info">{{comments.length}}</span></li>
+        <li class="approved"><span class="icon glyphicon glyphicon-thumbs-up"></span><span class="additional-info">{{getApprovals().length}}</span></li>
+        <li class="rejected"><span class="icon glyphicon glyphicon-thumbs-down"></span><span class="additional-info">{{getRejections().length}}</span></li>
+        -->
     </ul>
     <div class="row">
         <div class="col-md-9">
-            <div style="overflow: scroll;">
+            <div class="canvas-holder">
                 <canvas id="annotation_canvas" class="annotations-canvas" width="800" height="600"></canvas>
             </div>
             <div class="annotations-carousel">
                 <ul>
-                    <li class="previous icon glyphicon glyphicon-backward"></li>
-                    <li ng-repeat="thumb in thumbs">
-                    	
-                    	<img class="thumbnail" display="table-cell;" ng-src="{{thumb}}"></img>
-                    
+                    <li class="previous">
+                        <svg class="icon icon-arrow-left" viewBox="0 0 32 32"><use xlink:href="#icon-arrow-left"></use></svg>
                     </li>
-                    <li class="next icon glyphicon glyphicon-forward"></li>
+                    <li ng-repeat="thumb in thumbs">
+
+                    	<img class="thumbnail" display="table-cell;" ng-src="{{thumb}}"></img>
+
+                    </li>
+                    <li class="next icon-arrow-right">
+                        <svg class="icon icon-arrow-right" viewBox="0 0 32 32"><use xlink:href="#icon-arrow-right"></use></svg>
+                    </li>
                 </ul>
             </div>
             <h3>{{currentAnnotation.annotation.name}}</h3>
         </div>
         <div class="col-md-3">
             <ul class="comment-list">
-                <!-- <li class="user-input clearfix">
+                <li class="user-input clearfix" ng-if="readyForComment">
                     <form id="annotation-input">
                         <textarea name="user-input" rows="8" cols="40" ng-model="newCommentText"></textarea>
                         <div class="pull-right">
                             <button name="user-approve" class="btn btn-default"><i class="approve glyphicon glyphicon-remove-circle"></i></button>
                             <button name="user-reject" class="btn btn-default"><i class="reject glyphicon glyphicon-ok-circle"></i></button>
                             <button type="submit" name="user-add-comment" class="btn btn-primary" ng-click="addComment()">Add Comment</button>
-                            INSTEAD OF COMMENT ADDITION INTERFACE, INDIVIDUAL COMMENTS
-                                SHOULD JUST BE EDITABLE, text area in comment when clicked upon
                         </div>
                     </form>
                 </li>
-                <li class="seperator"></li> -->
+                <li class="seperator" ng-if="readyForComment"></li>
                 <li ng-repeat="comment in comments" class="comment {{comment.type}}">
                     <div ng-switch="comment.type">
                         <div ng-when="normal">
@@ -82,101 +91,3 @@
             </ul>
         </div>
     </div>
-
-<!-- all below code is obsolete -->
-
-    <div style="display: inline-block; margin-left: 10px; display: none;">
-        <button id="drawing-mode" class="btn btn-info">Cancel drawing mode</button>
-        <br>
-        <button id="clear-canvas" class="btn btn-info">Clear</button>
-        <br>
-        <button id="image-to-json" class="btn btn-info">Canvas to JSON</button>
-        <br>
-        <button id="zoom-tool" class="btn btn-info">Zoom:</button>
-        <br>
-
-        <div id="drawing-mode-options">
-            <label for="drawing-mode-selector">Mode:</label>
-            <select id="drawing-mode-selector">
-                <option>Pencil</option>
-<!--            really don't care about these at all     
-				<option>Circle</option>
-                <option>Spray</option>
-                <option>Pattern</option>
-                <option>hline</option>
-                <option>vline</option>
-                <option>square</option>
-                <option>diamond</option>
-                <option>texture</option> -->
-            </select><br>
-            </select>
-            <br>
-
-            <label for="shape-mode-selector">Shapes:</label>
-            <select id="shape-mode-selector" value="Circle">
-            	<option>Circle</option>
-            	<option>Rectangle</option>
-            </select>
-            <br>
-
-            <label for="drawing-line-width">Line width:</label>
-            <span class="info">5</span>
-            <input type="range" value="5" min="0" max="150" id="drawing-line-width">
-            <br>
-
-            <label for="drawing-color">Line color:</label>
-            <input type="color" value="#005E7A" id="drawing-color">
-            <br>
-
-            <label for="drawing-shadow-color">Shadow color:</label>
-            <input type="color" value="#005E7A" id="drawing-shadow-color">
-            <br>
-
-            <label for="drawing-shadow-width">Shadow width:</label>
-            <span class="info">0</span>
-            <input type="range" value="0" min="0" max="50" id="drawing-shadow-width">
-            <br>
-
-            <label for="drawing-shadow-offset">Shadow offset:</label>
-            <span class="info">0</span>
-            <input type="range" value="0" min="0" max="50" id="drawing-shadow-offset">
-            <br>
-        </div>
-    </div>
-
-<!-- doesn't really work but placeholder I guess... apparently this table should be below the canvas-->
-
-<!-- <div>
-	Collection assets
-    <div><input type="text" ng-model="tableFilter"></div>
-    <button ng-click="tableParams.sorting({})" class="btn btn-default pull-right">Clear sorting</button>
-    <p><strong>Sorting:</strong> {{tableParams.sorting()|json}}</p>
-    <table ng-table="tableParams" class="table">
-        <tr ng-repeat="element in $data | filter: tableFilter">
-          <td data-title="'Updates'" sortable="'annotation.hasRecentActivity'">
-              <span ng-if="element.annotation.hasRecentActivity">New Notes!</span>
-          </td>
-          <td data-title="'Project'" sortable="'project.name'">
-              <a ui-sref="app.projects.details({projectID: element.project.id})">{{element.project.name}}</a>
-          </td>
-          <td data-title="'Annotation'" sortable="'annotation.name'">
-              <a ui-sref="app.annotations.details({annotationID: element.annotation.id})">{{element.annotation.name}}</a>
-          </td>
-          <td data-title="'Description'" sortable="'annotation.description'">
-              <a ui-sref="app.annotations.details({annotationID: element.annotation.id})">{{element.annotation.description}}</a>
-          </td>
-          <td data-title="'Owner'" sortable="'annotation.owner'">
-
-              {{element.annotation.owner}}
-          </td>
-          <td data-title="'Status'" sortable="'annotation.status'">
-              {{element.annotation.status}}
-          </td>
-          <td data-title="'Created'" sortable="'annotation.createTime'">
-              {{element.annotation.createTime}}
-          </td>
-          <td data-title="'Updated'" sortable="'annotation.lastUpdateTime'">
-              {{element.annotation.lastUpdateTime}}
-          </td></tr>
-    </table>
-</div> -->

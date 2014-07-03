@@ -1,4 +1,4 @@
-# Workspace.controller 'AnnotationDetailsCtrl', 
+# Workspace.controller 'AnnotationDetailsCtrl',
 # ['$scope', '$stateParams', 'annotationService',
 # ($scope, $stateParams, annotationService) ->
 #     $scope.currentAnnotation = _.find annotationService.mockData,
@@ -10,7 +10,7 @@
 
 # working js file is located at AnnotationDetailsCtrl_orig.js
 # this is a buggy CoffeeScript
-Workspace.controller 'AnnotationDetailsCtrl', 
+Workspace.controller 'AnnotationDetailsCtrl',
 ['$scope', '$stateParams', '$timeout', 'annotationService', 'fabricJsService',
 ($scope, $stateParams, $timeout, annotationService, fabricJsService) ->
 	self.mouseDown = null # look I defined this here in the controller, this is probably bad !!!
@@ -20,20 +20,20 @@ Workspace.controller 'AnnotationDetailsCtrl',
 	$scope.newCommentText = null
 	$scope.approvalHash = {} # empty obj for user: approval kv pairs
 	# placeholder JSON function
-	markers = { 
+	markers = {
                 "query": [
                     {
                         "field": "id"
                         "operator": "matches"
                         "values": [
-                            "*"                            
+                            "*"
                         ]
                     }
-                    
+
                 ]
     }
 
-    $scope.doJSON = () -> 
+    $scope.doJSON = () ->
         $.ajax({
             type: "POST"
             url: "/entermedia/services/json/search/data/asset?catalogid=media/catalogs/public"
@@ -46,31 +46,31 @@ Workspace.controller 'AnnotationDetailsCtrl',
                 alert errMsg
         })
 
-	comment = 
+	comment =
 	{
 	    type: 'normal'
 	    name: 'Rob'
-	    email: md5 'jrchipman1@gmail.com' 
+	    email: md5 'jrchipman1@gmail.com'
 	    text: 'This is a comment that some dude left on here. cool.'
 	    annotationId: 3
 	    timestamp: moment().fromNow()
 	}
 
-	comment2 = 
+	comment2 =
 	{
 	    type: 'normal'
 	    name: 'Chris'
-	    email: md5 'test@gmail.com' 
+	    email: md5 'test@gmail.com'
 	    text: 'Hey, what about the thing on the right here, don\'t forget to do the stuff.'
 	    annotationId: 2
 	    timestamp: moment().subtract('minutes', 30).fromNow()
 	}
 
-	comment3 = 
+	comment3 =
 	{
 	    type: 'normal'
 	    name: 'Adam'
-	    email: md5 'test@gmail.com' 
+	    email: md5 'test@gmail.com'
 	    text: 'I dont feel like the sky is as blue as it could be, perhaps we should revisit?'
 	    annotationId: 1
 	    timestamp: moment().subtract('days', 1).fromNow()
@@ -141,16 +141,16 @@ Workspace.controller 'AnnotationDetailsCtrl',
 	() ->
 		(user for user of $scope.approvalHash when $scope.approvalHash[user] is true)
 
-	$scope.getRejections = 
+	$scope.getRejections =
 	() ->
 		(user for user of $scope.approvalHash when $scope.approvalHash[user] is false)
 
 	$scope.annotations = []		# holds all annotation groups (should be one per unique annotation w/ comment)
 	$scope.events = []			# events attribute holds information about the unique event
 	usefulKeys = ['']			# i dunno
-	$scope.currentAnnotation = _.find annotationService.mockData, 
+	$scope.currentAnnotation = _.find annotationService.mockData,
 	(item) ->
-		item.annotation.id is parseInt $stateParams.annotationID 
+		item.annotation.id is parseInt $stateParams.annotationID
 	# uses init function to create the fabric environment
 	$scope.fabric = fabricJsService.init $scope.currentAnnotation.annotation.path
 	$scope.selectTool('draw')
@@ -184,7 +184,7 @@ Workspace.controller 'AnnotationDetailsCtrl',
 		        borderColor: "#fff"
 		    }),
 
-	      	new fabric.Text $scope.currentCommentIndex.toString(), 
+	      	new fabric.Text $scope.currentCommentIndex.toString(),
 		      	{
 			        fontSize: 30
 			        color: "#ffffff"
@@ -203,7 +203,7 @@ Workspace.controller 'AnnotationDetailsCtrl',
 	    # lazy prompting and comment addition
 	    $scope.newCommentText = prompt "Enter a comment:" || "<no comment?>"
 	    # add little pin to canvas???
-	    annotationSpec = 
+	    annotationSpec =
 	    {
 	        id: $scope.currentCommentIndex+1
 	        group: $scope.currentAnnotationGroup
@@ -235,7 +235,7 @@ Workspace.controller 'AnnotationDetailsCtrl',
 	$scope.fabric.canvas.on 'mouse:up', (e) ->
 		self.mouseDown = false
 		if $scope.currentTool.annotating
-		  	$scope.annotationAction = 
+		  	$scope.annotationAction =
 		  		$timeout timeoutFunc, 2000
 	  	$scope.currentTool.events?.mouseup? e, $scope.fabric.canvas
 	  	em.unit
