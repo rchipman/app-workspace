@@ -14,11 +14,16 @@
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/fabric.css">
 
+    <!-- For Highlights -->
+    <link rel="stylesheet" href="css/highlights.css">
+
     <script src="js/vendor/modernizr/modernizr-2.6.2-respond-1.1.0.min.js"></script>
 
 </head>
 
     <body ng-app="Workspace">
+
+        <div ui-view="svgIncludes"></div>
 
         <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
             <div class="container-fluid">
@@ -29,13 +34,13 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                    <a class="navbar-brand" href="#">Site name</a>
+                    <a class="navbar-brand" href="#">Highlights for Children</a>
                 </div>
                 <div class="navbar-collapse collapse">
                     <div ui-view="mainMenu"></div>
-                    <form class="navbar-form navbar-right">
+<!--                     <form class="navbar-form navbar-right">
                         <input type="text" class="form-control" placeholder="Search...">
-                    </form>
+                    </form> -->
                 </div>
             </div>
         </div>
@@ -64,12 +69,13 @@
         <script src="js/vendor/angular/ng-table/ng-table.min.js"></script>
         <script src="js/vendor/fabric/fabric.js"></script>
         <script src="js/vendor/moment/moment.min.js"></script>
+        <script src="js/vendor/md5/md5.js"></script>
 
         <script src="js/main.js"></script>
         <!-- bring in services! -->
         <script src="js/services/annotationService.js"></script>
         <script src="js/services/fabricJsService.js"></script>
-        script
+
         <!-- bring in controllers! -->
         <script src="js/controllers/AnnotationCtrl.js"></script>
         <script src="js/controllers/DashboardCtrl.js"></script>

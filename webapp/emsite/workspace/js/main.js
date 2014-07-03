@@ -28,6 +28,9 @@ Workspace.config([
     $stateProvider.state('app', {
       abstract: true,
       views: {
+        'svgIncludes': {
+          templateUrl: 'partials/svg/svg-definitions.tpl.html'
+      },
         'mainMenu': {
           templateUrl: 'partials/navigation/main-menu.tpl.html'
         },
@@ -79,5 +82,3 @@ Workspace.config([
     return em.unit;
   }
 ]);
-
-

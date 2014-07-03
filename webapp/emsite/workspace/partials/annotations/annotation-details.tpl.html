@@ -1,81 +1,93 @@
-<a ui-sref="app.annotations">Back to Annotations</a>
-{{currentAnnotation}} {{currentAnnotation.annotation.path}}
+<!-- fabric formatting stuff... probably does not belong here -->
 
-<!-- Fabric experiment below
-	weird that it doesn't include the angular controller
-	or the canvas tag css, the wrappers are odd-->
-
-<div id="bd-wrapper">
-    <h2><span>Annotation Canvas</span> &middot; Test phase</h2>
-    {{currentAnnotation}}
-
-    <canvas class="coveredImage" id="annotation_canvas" width="800" height="600" style="border:1px solid #aaa"></canvas>
-    <!--<div class="outsideWrapper">
-    	<div class="insideWrapper">
-
-    	</div>
-	</div>-->
-
-    <ul>
-        <li><strong>Events:</strong></li>
-        <li ng-repeat="event in events">{{event.id}}: {{event.text}}</li>
+    <ul class="annotations-toolbar">
+        <li ng-click="selectTool('move')" ng-class="{ 'active': currentTool.name == 'move' }">
+            <svg class="icon icon-move" viewBox="0 0 32 32"><use xlink:href="#icon-move"></use></svg>
+        </li>
+        <li ng-click="selectTool('draw')" ng-class="{ 'active': currentTool.name == 'draw' }">
+            <svg class="icon icon-draw" viewBox="0 0 32 32"><use xlink:href="#icon-draw"></use></svg>
+        </li>
+        <li ng-click="selectTool('shape')" ng-class="{ 'active': currentTool.name == 'shape' }">
+            <svg class="icon icon-circle" viewBox="0 0 32 32"><use xlink:href="#icon-circle"></use></svg>
+        </li>
+        <li ng-click="selectTool('arrow')" ng-class="{ 'active': currentTool.name == 'arrow' }">
+            <svg class="icon icon-arrow" viewBox="0 0 32 32"><use xlink:href="#icon-arrow"></use></svg>
+        </li>
+        <li ng-click="selectTool('text')" ng-class="{ 'active': currentTool.name == 'text' }">
+            <svg class="icon icon-text" viewBox="0 0 32 32"><use xlink:href="#icon-text"></use></svg>
+        </li>
+        <li ng-click="selectTool('zoom')" ng-class="{ 'active': currentTool.name == 'zoom' }">
+            <svg class="icon icon-zoom-in" viewBox="0 0 32 32"><use xlink:href="#icon-zoom-in"></use></svg>
+        </li>
+        <li ng-click="selectTool('comment')" ng-class="{ 'active': currentTool.name == 'comment' }" class="last">
+            <svg class="icon icon-comment" viewBox="0 0 32 32"><use xlink:href="#icon-comment"></use></svg>
+        </li>
+        <!--
+        <li class="comment" ng-click="selectTool('comment')"><span class="icon glyphicon glyphicon-pushpin"></span></li>
+        <li class="colorpicker" ng-click="selectTool('colorpicker')"><span class="icon glyphicon glyphicon-tint colorpicker"></span></li>
+        <li class="comments"><span class="icon glyphicon glyphicon-comment"></span><span class="additional-info">{{comments.length}}</span></li>
+        <li class="approved"><span class="icon glyphicon glyphicon-thumbs-up"></span><span class="additional-info">{{getApprovals().length}}</span></li>
+        <li class="rejected"><span class="icon glyphicon glyphicon-thumbs-down"></span><span class="additional-info">{{getRejections().length}}</span></li>
+        -->
     </ul>
+    <div class="row">
+        <div class="col-md-9">
+            <div class="canvas-holder">
+                <canvas id="annotation_canvas" class="annotations-canvas" width="800" height="600"></canvas>
+            </div>
+            <div class="annotations-carousel">
+                <ul>
+                    <li class="previous">
+                        <svg class="icon icon-arrow-left" viewBox="0 0 32 32"><use xlink:href="#icon-arrow-left"></use></svg>
+                    </li>
+                    <li ng-repeat="thumb in thumbs">
 
-    <div style="display: inline-block; margin-left: 10px">
-        <button id="drawing-mode" class="btn btn-info">Cancel drawing mode</button>
-        <br>
-        <button id="clear-canvas" class="btn btn-info">Clear</button>
-        <br>
-        <!-- add new button to create image flattening -->
-        <button id="image-to-json" class="btn btn-info">Canvas to JSON</button>
-        <br>
+                    	<img class="thumbnail" display="table-cell;" ng-src="{{thumb}}"></img>
 
-        <div id="drawing-mode-options">
-            <label for="drawing-mode-selector">Mode:</label>
-            <select id="drawing-mode-selector">
-                <option>Pencil</option>
-                <option>Circle</option>
-                <option>Spray</option>
-                <option>Pattern</option>
-
-                <option>hline</option>
-                <option>vline</option>
-                <option>square</option>
-                <option>diamond</option>
-                <option>texture</option>
-            </select>
-            <br>
-
-            <label for="drawing-line-width">Line width:</label>
-            <span class="info">30</span>
-            <input type="range" value="30" min="0" max="150" id="drawing-line-width">
-            <br>
-
-            <label for="drawing-color">Line color:</label>
-            <input type="color" value="#005E7A" id="drawing-color">
-            <br>
-
-            <label for="drawing-shadow-color">Shadow color:</label>
-            <input type="color" value="#005E7A" id="drawing-shadow-color">
-            <br>
-
-            <label for="drawing-shadow-width">Shadow width:</label>
-            <span class="info">0</span>
-            <input type="range" value="0" min="0" max="50" id="drawing-shadow-width">
-            <br>
-
-            <label for="drawing-shadow-offset">Shadow offset:</label>
-            <span class="info">0</span>
-            <input type="range" value="0" min="0" max="50" id="drawing-shadow-offset">
-            <br>
+                    </li>
+                    <li class="next icon-arrow-right">
+                        <svg class="icon icon-arrow-right" viewBox="0 0 32 32"><use xlink:href="#icon-arrow-right"></use></svg>
+                    </li>
+                </ul>
+            </div>
+            <h3>{{currentAnnotation.annotation.name}}</h3>
+        </div>
+        <div class="col-md-3">
+            <ul class="comment-list">
+                <li class="user-input clearfix" ng-if="readyForComment">
+                    <form id="annotation-input">
+                        <textarea name="user-input" rows="8" cols="40" ng-model="newCommentText"></textarea>
+                        <div class="pull-right">
+                            <button name="user-approve" class="btn btn-default"><i class="approve glyphicon glyphicon-remove-circle"></i></button>
+                            <button name="user-reject" class="btn btn-default"><i class="reject glyphicon glyphicon-ok-circle"></i></button>
+                            <button type="submit" name="user-add-comment" class="btn btn-primary" ng-click="addComment()">Add Comment</button>
+                        </div>
+                    </form>
+                </li>
+                <li class="seperator" ng-if="readyForComment"></li>
+                <li ng-repeat="comment in comments" class="comment {{comment.type}}">
+                    <div ng-switch="comment.type">
+                        <div ng-when="normal">
+                            <div class="comment-holder">
+                                <div class="user-gravatar">
+                                    <img ng-src="http://www.gravatar.com/avatar/{{comment.email}}" alt="" />
+                                </div>
+                                <div class="comment-content">
+                                    <strong>{{comment.name}}</strong>
+                                    <p>
+                                        {{comment.text}}
+                                    </p>
+                                    </div>
+                                </div>
+                                <div class="comment-meta">
+                                    <span class="comment-id">{{comment.annotationId}}</span>
+                                    <a href="#">remove</a>
+                                    <span class="comment-timestamp pull-right">{{comment.timestamp}}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            </ul>
         </div>
     </div>
-
-    <!-- test angular output-->
-    <p>
-        <img src='{{currentAnnotation.annotation.path}}'></img>
-    </p>
-    {{currentAnnotation.annotation.path}}
-    <!-- /test -->
-
-</div>
