@@ -40,10 +40,10 @@
                     <li class="previous">
                         <svg class="icon icon-arrow-left" viewBox="0 0 32 32"><use xlink:href="#icon-arrow-left"></use></svg>
                     </li>
-                    <li ng-repeat="thumb in thumbs">
-
-                    	<img class="thumbnail" display="table-cell;" ng-src="{{thumb}}"></img>
-
+                    <li ng-repeat="thumb in thumbs" class="thumb clearfix" ng-class="{'active': currentAnnotation.annotation.id === thumb.id}">
+                    	<a ui-sref="app.annotations.details({annotationID: thumb.id})">
+                            <img ng-src="{{thumb.src}}"></img>
+                        </a>
                     </li>
                     <li class="next icon-arrow-right">
                         <svg class="icon icon-arrow-right" viewBox="0 0 32 32"><use xlink:href="#icon-arrow-right"></use></svg>
@@ -54,17 +54,16 @@
         </div>
         <div class="col-md-3">
             <ul class="comment-list">
-                <li class="user-input clearfix" ng-if="readyForComment">
+                <li class="user-input clearfix" ng-show="readyToComment">
                     <form id="annotation-input">
-                        <textarea name="user-input" rows="8" cols="40" ng-model="newCommentText"></textarea>
+                        <textarea id="user-comment-input" name="user-input" rows="8" cols="40" ng-model="newCommentText"></textarea>
                         <div class="pull-right">
-                            <button name="user-approve" class="btn btn-default"><i class="approve glyphicon glyphicon-remove-circle"></i></button>
-                            <button name="user-reject" class="btn btn-default"><i class="reject glyphicon glyphicon-ok-circle"></i></button>
+                            <button name="user-add-comment" class="btn btn-danger" ng-click="cancelComment()">Cancel</button>
                             <button type="submit" name="user-add-comment" class="btn btn-primary" ng-click="addComment()">Add Comment</button>
                         </div>
                     </form>
                 </li>
-                <li class="seperator" ng-if="readyForComment"></li>
+                <li class="seperator" ng-show="readyToComment"></li>
                 <li ng-repeat="comment in comments" class="comment {{comment.type}}">
                     <div ng-switch="comment.type">
                         <div ng-when="normal">

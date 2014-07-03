@@ -17,6 +17,9 @@ body {
   background-color: #68a8c1;
   border: 1px solid #41768b;
 }
+.btn.btn-primary:hover {
+  background-color: #569eba;
+}
 .btn.btn-default {
   background-color: #eee;
   border: 1px solid #ddd;
@@ -108,11 +111,25 @@ body {
   list-style: none;
 }
 .annotations-carousel ul li {
-  width: 80px;
   height: 60px;
   background: #fff;
   float: left;
   margin: 15px 0 0 12px;
+  text-align: center;
+  border-radius: 0;
+}
+.annotations-carousel ul li.thumb {
+  padding: 5px;
+}
+.annotations-carousel ul li.thumb img {
+  height: 100%;
+  padding: 0;
+}
+.annotations-carousel ul li.thumb:hover {
+  background: #fff;
+}
+.annotations-carousel ul li.thumb.active {
+  background: #abdcef;
 }
 .annotations-carousel ul li.previous,
 .annotations-carousel ul li.next {

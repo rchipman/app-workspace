@@ -5,18 +5,16 @@ Workspace.factory 'fabricJsService', () ->
 
     toolkit = [
         {
+            name: 'disabled'
+            properties: {
+                isDrawingMode: false
+            }
+            annotating: false,
+        },
+        {
             name: 'draw'
             properties: {
                 isDrawingMode: true # this may be the only thing necessary
-<<<<<<< HEAD
-                # freeDrawingBrush: {
-                #     color: '#fff000' # need to pick a color by picker
-                #     width: 5
-                #     shadowBlur: 0
-                # }
-=======
-                # freeDrawingBrush: some complicated object generation crap
->>>>>>> upstream/ws-5
             }
             annotating: true
         },

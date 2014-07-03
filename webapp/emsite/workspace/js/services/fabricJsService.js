@@ -8,6 +8,12 @@ Workspace.factory('fabricJsService', function() {
   };
   toolkit = [
     {
+      name: 'disabled',
+      properties: {
+        isDrawingMode: false
+      },
+      annotating: false
+    }, {
       name: 'draw',
       properties: {
         isDrawingMode: true

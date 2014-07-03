@@ -35,7 +35,8 @@ Workspace.config([
           templateUrl: 'partials/navigation/main-menu.tpl.html'
         },
         'sidebar': {
-          templateUrl: 'partials/navigation/sidebar.tpl.html'
+          templateUrl: 'partials/navigation/sidebar.tpl.html',
+          controller: 'SidebarCtrl'
         }
       }
     }).state('app.dashboard', {
