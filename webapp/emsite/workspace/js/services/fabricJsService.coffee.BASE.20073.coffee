@@ -8,15 +8,11 @@ Workspace.factory 'fabricJsService', () ->
             name: 'draw'
             properties: {
                 isDrawingMode: true # this may be the only thing necessary
-<<<<<<< HEAD
-                # freeDrawingBrush: {
-                #     color: '#fff000' # need to pick a color by picker
-                #     width: 5
-                #     shadowBlur: 0
-                # }
-=======
-                # freeDrawingBrush: some complicated object generation crap
->>>>>>> upstream/ws-5
+                freeDrawingBrush: {
+                    color: '#fff000' # need to pick a color by picker
+                    width: 5
+                    shadowBlur: 0
+                }
             }
             annotating: true
         },
@@ -39,13 +35,13 @@ Workspace.factory 'fabricJsService', () ->
             drawparams: [
                 (pointer) ->
                     {
-                        radius: Math.abs self.origX - pointer.x
+                        radius: Math.abs(self.origX - pointer.x)
                     }
                 ,
                 (pointer) ->
                     {
-                        width: -self.origX + pointer.x
-                        height: -self.origY + pointer.y
+                        width: -(self.origX - pointer.x),
+                        height: -(self.origY - pointer.y)
                     }
             ]
             blanks: [
@@ -70,14 +66,14 @@ Workspace.factory 'fabricJsService', () ->
                 }
             ]
             events: {
-
+ 
                 # I don't think it makes sense to put these weird event-based props on $scope, so the implementation
                 # is bad and confusing maybe the canvas should know current shape/current tool, but when you have multiple
                 # people drawing it is hard to say without knowing more about how the canvases are deployed
                 # i.e. is it one canvas on server being manipulated or multiple canvases per user being pushed to
                 # merge with server copy
 
-
+ 
 
                 mouseup: (e, canvas) ->
                     # not sure if this is best way to do this
@@ -93,7 +89,7 @@ Workspace.factory 'fabricJsService', () ->
                     spec.top = pointer.y
                     shape = new we.type spec
                     canvas.add shape
-                    em.unit
+                    em.unit                              
                 objectadded: null
                 mousemove: (e, canvas) ->
                     if self.mouseDown # just awful !!!
@@ -115,7 +111,7 @@ Workspace.factory 'fabricJsService', () ->
                     events: {
                         mouseup: null # will want to put something here !!!
                         mousedown: null
-                        objectadded: null # then we should fully integrate the
+                        objectadded: null # then we should fully integrate the 
                     }
                 },
                 {
@@ -148,7 +144,7 @@ Workspace.factory 'fabricJsService', () ->
                                 delta = origX - pointer.x
                                 objects = canvas.getObjects()
                                 # needs changes !!!
-                                delta = Math.abs delta * SCALE_FACTOR
+                                delta = Math.abs(delta * SCALE_FACTOR)
                                 transform = [1+delta,0,0,1+delta,0,0]
                                 console.log transform
                                 for klass in objects
@@ -170,16 +166,6 @@ Workspace.factory 'fabricJsService', () ->
                 },
                 {
                     name: 'colorpicker' # no implementation $$$
-                    properties: {}
-                    annotating: false
-                },
-                {
-                    name: 'load' # temporary?
-                    properties: {}
-                    annotating: false
-                },
-                {
-                    name: 'export'
                     properties: {}
                     annotating: false
                 }
@@ -247,7 +233,7 @@ Workspace.factory 'fabricJsService', () ->
                     for [0..canvases.length]
                         canvases[i].calcOffset()
                 em.unit
-
+                
         )()
         canvas: returnCanvas
         toolkit: toolkit

@@ -13,10 +13,13 @@
 Workspace.controller 'AnnotationDetailsCtrl', 
 ['$scope', '$stateParams', '$timeout', 'annotationService', 'fabricJsService',
 ($scope, $stateParams, $timeout, annotationService, fabricJsService) ->
-
+	self.mouseDown = null # look I defined this here in the controller, this is probably bad !!!
+	self.origX = 0 # !!!
+	self.origY = 0 # !!!
 	$scope.currentCommentIndex = 3 # should probably be deprecated to have annotation index tied to comment index
 	$scope.newCommentText = null
 	$scope.approvalHash = {} # empty obj for user: approval kv pairs
+	# placeholder JSON function
 
 	comment = 
 	{
@@ -53,7 +56,38 @@ Workspace.controller 'AnnotationDetailsCtrl',
 	$scope.approved = [1..4]	# deprecated? unless property approach more favored in angular vs methods?
 	$scope.rejected = [1]		# deprecated? maybe not since method method doesn't work?
 	$scope.images = [1..6]		# deprecated but so is below line since thumb generation is free from EM
-	$scope.thumbs = ['img/thumbs/BlueBus.gif','img/thumbs/ForMom.gif','img/thumbs/Baseball-Player.gif','img/thumbs/FenceDog.gif','img/thumbs/TigerTug.gif','img/thumbs/hs-2003-28-a-1280x768_wallpaper.gif']
+	$scope.loadImages = (collectionid) ->
+		markers = {
+			"query": [
+				{
+					"field": "id"
+					"operator": "matches"
+					"values": ["*"]
+		    	}
+			]
+		}
+		em.unit
+		# applicationid = /emsite/workspace
+		# #{applicationid}/views/modules/asset/downloads/preview/thumbsmall/#{more.sourcepath}/thumb.jpg
+		doJSON = () ->
+			$.ajax {
+				type: "POST"
+				url: "/entermedia/services/json/search/data/asset?catalogid=media/catalogs/public"
+				data: JSON.stringify markers
+				contentType: "application/json; charset=utf-8"
+				dataType: "json"
+				async: false
+				success: (data) ->
+					tempArray = $.each data.results, (index, more) ->
+				    	more.sourcepath
+				   	console.log tempArray
+				,
+				failure: (errMsg) ->
+					alert errMsg
+				}
+			em.unit
+
+	
 
 	$scope.addComment =
 	() ->
@@ -67,6 +101,14 @@ Workspace.controller 'AnnotationDetailsCtrl',
 	    }
 	    $scope.newCommentText = null
 	    em.unit
+
+    $scope.selectTool = (toolname) ->
+        $scope.currentTool = _.findWhere $scope.fabric.toolkit, name: toolname
+        # do whatever else needs to happen !!!
+        for prop of $scope.currentTool.properties
+        	$scope.fabric.canvas[prop] = $scope.currentTool.properties[prop]
+        console.log $scope.currentTool
+        em.unit
 
 	$scope.setApproval =
 	(user, approvalState) ->
@@ -88,43 +130,32 @@ Workspace.controller 'AnnotationDetailsCtrl',
 		item.annotation.id is parseInt $stateParams.annotationID 
 	# uses init function to create the fabric environment
 	$scope.fabric = fabricJsService.init $scope.currentAnnotation.annotation.path
+	$scope.selectTool('draw')
 	$scope.eventIndex = 0
 	$scope.annotationAction = null
 	$scope.currentAnnotationGroup = []
 	$scope.currentAnnotationGroupId = 0
 	# _.contains(array, entry) -> bool is entry in array
+	###
+    This whole process is muddled, what should happen is simple:
+    user clicks to draw a shape, that shape is added to the current group upon object:added
+    a timeout function begins to check if they are done annotating
+    if the user clicks again within a time window, the timeout function is cancelled
+    repeat process until...
+    user finishes annotation, they should be prompted for a comment
+    a pin should be created and added into the annotationGroup data
+    the pin should be rendered on screen somewhere appropriate and...
+    the comment should be added to scope with annotationGroup data to be attached to comment
+	###
 
-    ###
-      This whole process is muddled, what should happen is simple:
-        user clicks to draw a shape, that shape is added to the current group upon object:added
-          a timeout function begins to check if they are done annotating
-        if the user clicks again within a time window, the timeout function is cancelled
-          repeat process until...
-        user finishes annotation, they should be prompted for a comment
-          a pin should be created and added into the annotationGroup data
-          the pin should be rendered on screen somewhere appropriate and...
-          the comment should be added to scope with annotationGroup data to be attached to comment
-    ###
-	timeoutFunc = () ->
-    	$scope.events.push {id: $scope.eventIndex++,  text: 'Object added!'}
-	    # lazy prompting and comment addition
-	    $scope.newCommentText = prompt "Enter a comment:" || "<no comment?>"
-	    # add little pin to canvas???
-	    annotationSpec = 
-	    {
-	        id: $scope.currentCommentIndex+1
-	        group: $scope.currentAnnotationGroup
-	        user: $scope.currentUser
-	        comment: $scope.newCommentText
-	    }
-	    $scope.addComment()
-	    # oh please tell me there is a non-ugly way to do this (I bet that's what Coffee is for)
-	    canvasContents = $scope.fabric.canvas.getObjects()
-	    dropPoint = canvasContents[canvasContents.length-1];
-	    # fix this ^^^
-	    console.log $scope.fabric.canvas.getObjects()
-	    # make the crappy pin shape
-	    pinGroup = new fabric.Group [new fabric.Circle({
+
+
+	commentPin = () ->
+		dropPoint = $scope.fabric.canvas.getObjects()[$scope.fabric.canvas.getObjects().length-1]
+		# should handle this drop point some better way
+		# currently this method does not support the use of the comment tool (irony)
+
+		new fabric.Group [new fabric.Circle({
 		        radius: 15
 		        fill: "#000fff"
 		        borderColor: "#fff"
@@ -143,7 +174,24 @@ Workspace.controller 'AnnotationDetailsCtrl',
 		        top: dropPoint.top
 		        left: dropPoint.left
 		    }
-	    $scope.fabric.canvas.add pinGroup
+
+	timeoutFunc = () ->
+    	$scope.events.push {id: $scope.eventIndex++,  text: 'Object added!'}
+	    # lazy prompting and comment addition
+	    $scope.newCommentText = prompt "Enter a comment:" || "<no comment?>"
+	    # add little pin to canvas???
+	    annotationSpec = 
+	    {
+	        id: $scope.currentCommentIndex+1
+	        group: $scope.currentAnnotationGroup
+	        user: $scope.currentUser
+	        comment: $scope.newCommentText
+	    }
+	    $scope.addComment()
+	    # oh please tell me there is a non-ugly way to do this (I bet that's what Coffee is for)
+
+	    # fix this ^^^
+	    $scope.fabric.canvas.add commentPin()
 	    # now push annotation info to scope for longer-term tracking
 	    $scope.annotations.push annotationSpec
 	    $scope.currentAnnotationGroup = []
@@ -151,18 +199,34 @@ Workspace.controller 'AnnotationDetailsCtrl',
 	    $scope.$apply()  # is this even necessary here?
 	    em.unit
 
-	$scope.fabric.canvas.on 'mouse:down', () ->
-	 	if $scope.annotationAction isnt null
+	$scope.fabric.canvas.on 'mouse:down', (e) ->
+		self.mouseDown = true
+		if $scope.annotationAction isnt null
 	    	$timeout.cancel $scope.annotationAction
-	    	em.unit
+	    pointer = $scope.fabric.canvas.getPointer e.e
+	    self.origX = pointer.x
+	    self.origY = pointer.y
+	    $scope.currentTool.events?.mousedown? e, $scope.fabric.canvas
+	    em.unit
 
 	$scope.fabric.canvas.on 'mouse:up', (e) ->
-	  	$scope.annotationAction = 
-	  		$timeout timeoutFunc, 2000
+		self.mouseDown = false
+		if $scope.currentTool.annotating
+		  	$scope.annotationAction = 
+		  		$timeout timeoutFunc, 2000
+	  	$scope.currentTool.events?.mouseup? e, $scope.fabric.canvas
 	  	em.unit
+	$scope.fabric.canvas.on 'mouse:move', (e) ->
+		$scope.currentTool.events?.mousemove? e, $scope.fabric.canvas
+		em.unit
 
 	$scope.fabric.canvas.on 'object:added', (obj) ->
-	    $scope.currentAnnotationGroup.push obj
-	    em.unit
+		if $scope.currentTool.annotating
+			$scope.currentAnnotationGroup.push obj
+		$scope.currentTool.events?.objectadded? obj, $scope.fabric.canvas
+		# this may not be the best place for these, but it needs to happen somewhat regularly
+		$scope.fabric.canvas.renderAll()
+		$scope.fabric.canvas.calcOffset()
+		em.unit
 	em.unit
 ]

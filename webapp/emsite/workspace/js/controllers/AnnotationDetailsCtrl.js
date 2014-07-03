@@ -2,37 +2,14 @@
 
 Workspace.controller('AnnotationDetailsCtrl', [
   '$scope', '$stateParams', '$timeout', 'annotationService', 'fabricJsService', function($scope, $stateParams, $timeout, annotationService, fabricJsService) {
-    var comment, comment2, comment3, commentPin, loadImages, markers, timeoutFunc, usefulKeys;
+    var comment, comment2, comment3, commentPin, timeoutFunc, usefulKeys;
     self.mouseDown = null;
     self.origX = 0;
     self.origY = 0;
     $scope.currentCommentIndex = 3;
     $scope.newCommentText = null;
+    $scope.thumbs = [];
     $scope.approvalHash = {};
-    markers = {
-      "query": [
-        {
-          "field": "id",
-          "operator": "matches",
-          "values": ["*"]
-        }
-      ]
-    };
-    $scope.doJSON = function() {
-      return $.ajax({
-        type: "POST",
-        url: "/entermedia/services/json/search/data/asset?catalogid=media/catalogs/public",
-        data: markers,
-        contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function(data) {
-          return alert(data);
-        },
-        failure: function(errMsg) {
-          return alert(errMsg);
-        }
-      });
-    };
     comment = {
       type: 'normal',
       name: 'Rob',
@@ -61,8 +38,10 @@ Workspace.controller('AnnotationDetailsCtrl', [
     $scope.approved = [1, 2, 3, 4];
     $scope.rejected = [1];
     $scope.images = [1, 2, 3, 4, 5, 6];
-    loadImages = function(collectionid) {
-      return markers = {
+    $scope.collectionid = 102;
+    $scope.loadImages = function(collectionid) {
+      var markers;
+      markers = {
         "query": [
           {
             "field": "id",
@@ -71,9 +50,7 @@ Workspace.controller('AnnotationDetailsCtrl', [
           }
         ]
       };
-    };
-    $scope.doJSON = function() {
-      return $.ajax({
+      $.ajax({
         type: "POST",
         url: "/entermedia/services/json/search/data/asset?catalogid=media/catalogs/public",
         data: JSON.stringify(markers),
@@ -82,15 +59,24 @@ Workspace.controller('AnnotationDetailsCtrl', [
         async: false,
         success: function(data) {
           var tempArray;
-          tempArray = $.each(data.results, function(index, more) {
-            return more.sourcepath;
+          tempArray = [];
+          $.each(data.results, function(index, obj) {
+            var path;
+            path = "http://localhost:8080/emshare/views/modules/asset/downloads/preview/thumbsmall/" + obj.sourcepath + "/thumb.jpg";
+            $scope.thumbs.push(path);
+            console.log(fabric.util.loadImage(path, function(src) {
+              return $scope.fabric.canvas.add(new fabric.Image(src));
+            }));
+            return em.unit;
           });
-          return $scope.thumbs = tempArray;
+          return em.unit;
         },
         failure: function(errMsg) {
-          return alert(errMsg);
+          alert(errMsg);
+          return em.unit;
         }
       });
+      return em.unit;
     };
     $scope.addComment = function() {
       $scope.comments.unshift({
@@ -112,7 +98,6 @@ Workspace.controller('AnnotationDetailsCtrl', [
       for (prop in $scope.currentTool.properties) {
         $scope.fabric.canvas[prop] = $scope.currentTool.properties[prop];
       }
-      console.log($scope.currentTool);
       return em.unit;
     };
     $scope.setApproval = function(user, approvalState) {
@@ -163,8 +148,6 @@ Workspace.controller('AnnotationDetailsCtrl', [
     */
 
     commentPin = function() {
-      var dropPoint;
-      dropPoint = $scope.fabric.canvas.getObjects()[$scope.fabric.canvas.getObjects().length - 1];
       return new fabric.Group([
         new fabric.Circle({
           radius: 15,
@@ -178,8 +161,8 @@ Workspace.controller('AnnotationDetailsCtrl', [
         })
       ], {
         evented: false,
-        top: dropPoint.top,
-        left: dropPoint.left
+        top: $scope.origX,
+        left: $scope.origY
       });
     };
     timeoutFunc = function() {
@@ -222,14 +205,13 @@ Workspace.controller('AnnotationDetailsCtrl', [
       var _ref;
       self.mouseDown = false;
       if ($scope.currentTool.annotating) {
-        $scope.annotationAction = $timeout(timeoutFunc, 2000);
-      }
-      if ((_ref = $scope.currentTool.events) != null) {
-        if (typeof _ref.mouseup === "function") {
-          _ref.mouseup(e, $scope.fabric.canvas);
+        if ((_ref = $scope.currentTool.events) != null) {
+          if (typeof _ref.mouseup === "function") {
+            _ref.mouseup(e, $scope.fabric.canvas);
+          }
         }
+        return em.unit;
       }
-      return em.unit;
     });
     $scope.fabric.canvas.on('mouse:move', function(e) {
       var _ref;

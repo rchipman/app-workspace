@@ -34,8 +34,8 @@ Workspace.factory('fabricJsService', function() {
           };
         }, function(pointer) {
           return {
-            width: -(self.origX - pointer.x),
-            height: -(self.origY - pointer.y)
+            width: -self.origX + pointer.x,
+            height: -self.origY + pointer.y
           };
         }
       ],
@@ -144,6 +144,14 @@ Workspace.factory('fabricJsService', function() {
       }
     }, {
       name: 'colorpicker',
+      properties: {},
+      annotating: false
+    }, {
+      name: 'load',
+      properties: {},
+      annotating: false
+    }, {
+      name: 'export',
       properties: {},
       annotating: false
     }
