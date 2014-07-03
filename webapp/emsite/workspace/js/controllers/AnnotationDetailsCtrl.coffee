@@ -15,6 +15,8 @@ Workspace.controller 'AnnotationDetailsCtrl',
 ($rootScope, $scope, $stateParams, $timeout, annotationService, fabricJsService) ->
 
 	$rootScope.$broadcast 'navigatedTo', 'Annotations'
+	$scope.selectable = false
+	$scope.canSelect = () -> $scope.selectable
 	$scope.color = '#000fff'
 	$scope.brushWidth = 5
 	self.mouseDown = null # look I defined this here in the controller, this is probably bad !!!
@@ -127,17 +129,24 @@ Workspace.controller 'AnnotationDetailsCtrl',
 				em.unit
 			}
 		em.unit
-
+	$scope.removeComment = (annotationid) ->
+		which = _.findWhere $scope.annotations, id: annotationid
+		$scope.fabric.canvas.remove which.group
+		$scope.annotations = _.without $scope.annotations, which
+		em.unit
 	$scope.addComment = () ->
 		pin = commentPin()
 		$scope.currentAnnotationGroup.push pin
 		pinnedGroup = new fabric.Group $scope.currentAnnotationGroup
+		for obj in $scope.currentAnnotationGroup
+			$scope.fabric.canvas.remove obj
+		pinnedGroup._restoreObjectsState()
 		$scope.fabric.canvas.add pinnedGroup
-		$scope.origX = null
-		$scope.origY = null
+		# self.origX = null
+		# self.origY = null
 		annotationSpec =
 			id: $scope.currentCommentIndex++
-			group: $scope.currentAnnotationGroup
+			group: pinnedGroup
 			user: $scope.currentUser
 			comment:
 				type: 'normal'
@@ -202,6 +211,7 @@ Workspace.controller 'AnnotationDetailsCtrl',
 		console.log $scope.annotations
 
 
+
 	commentPin = () ->
 		# should handle this drop point some better way
 		# currently this method does not support the use of the comment tool (irony)
@@ -230,10 +240,13 @@ Workspace.controller 'AnnotationDetailsCtrl',
 		],
 			{
 				evented: false
-				# top: $scope.origX
-				# left: $scope.origY
-				originX: 'center'
-				originY: 'center'
+				top: self.origX
+				left: self.origY
+				lockScalingX: false
+				lockScalingY: false
+				selectable: (() -> $scope.selectable)()
+				# originX: 'center'
+				# originY: 'center'
 			}
 
 	timeoutFunc = () ->
@@ -268,13 +281,14 @@ Workspace.controller 'AnnotationDetailsCtrl',
 
 	$scope.fabric.canvas.on 'object:added', (obj) ->
 		if $scope.currentTool.annotating
+			obj.target.selectable = (()-> $scope.selectable)()
 			$scope.currentAnnotationGroup.push obj.target
 		$scope.currentTool.events?.objectadded? obj, $scope.fabric.canvas
 		# this may not be the best place for these, but it needs to happen somewhat regularly
 		$scope.fabric.canvas.renderAll()
 		$scope.fabric.canvas.calcOffset()
-		$scope.origX = obj.target.top - 15 if !$scope.origX
-		$scope.origY = obj.target.left - 15 if !$scope.origY
+		self.origX = obj.target.top - 15 if !self.origX
+		self.origY = obj.target.left - 15 if !self.origY
 		em.unit
 	em.unit
 ]

@@ -79,6 +79,30 @@ Workspace.config([
 					controller: 'ProjectDetailsCtrl'
 				}
 			}
+		}).state('app.programs', {
+			url: '/#/',
+			views: {
+				'mainContentArea@': {
+					templateUrl: 'partials/projects/program-details.tpl.html',
+					controller: 'ProgramDetailsCtrl'
+				}
+			}
+		}).state('app.libraries', {
+			url: '/#/',
+			views: {
+				'mainContentArea@': {
+					templateUrl: 'partials/projects/library-details.tpl.html',
+					controller: 'LibraryDetailsCtrl'
+				}
+			}
+		}).state('app.collections', {
+			url: '/#/',
+			views: {
+				'mainContentArea@': {
+					templateUrl: 'partials/projects/collection-details.tpl.html',
+					controller: 'CollectionDetailsCtrl'
+				}
+			}
 		});
 		return em.unit;
 	}

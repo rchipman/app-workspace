@@ -92,7 +92,7 @@ body {
 .canvas-holder {
   background: #fff;
   border: 10px solid #fff;
-  overflow: auto;
+  overflow: scroll;
 }
 .canvas-holder .annotations-canvas {
   margin: 0 auto;

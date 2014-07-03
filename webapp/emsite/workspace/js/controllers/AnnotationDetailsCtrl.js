@@ -4,6 +4,10 @@ Workspace.controller('AnnotationDetailsCtrl', [
   '$rootScope', '$scope', '$stateParams', '$timeout', 'annotationService', 'fabricJsService', function($rootScope, $scope, $stateParams, $timeout, annotationService, fabricJsService) {
     var commentPin, metaUser, timeoutFunc, usefulKeys;
     $rootScope.$broadcast('navigatedTo', 'Annotations');
+    $scope.selectable = false;
+    $scope.canSelect = function() {
+      return $scope.selectable;
+    };
     $scope.color = '#000fff';
     $scope.brushWidth = 5;
     self.mouseDown = null;
@@ -78,17 +82,30 @@ Workspace.controller('AnnotationDetailsCtrl', [
       });
       return em.unit;
     };
+    $scope.removeComment = function(annotationid) {
+      var which;
+      which = _.findWhere($scope.annotations, {
+        id: annotationid
+      });
+      $scope.fabric.canvas.remove(which.group);
+      $scope.annotations = _.without($scope.annotations, which);
+      return em.unit;
+    };
     $scope.addComment = function() {
-      var annotationSpec, pin, pinnedGroup;
+      var annotationSpec, obj, pin, pinnedGroup, _i, _len, _ref;
       pin = commentPin();
       $scope.currentAnnotationGroup.push(pin);
       pinnedGroup = new fabric.Group($scope.currentAnnotationGroup);
+      _ref = $scope.currentAnnotationGroup;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        obj = _ref[_i];
+        $scope.fabric.canvas.remove(obj);
+      }
+      pinnedGroup._restoreObjectsState();
       $scope.fabric.canvas.add(pinnedGroup);
-      $scope.origX = null;
-      $scope.origY = null;
       annotationSpec = {
         id: $scope.currentCommentIndex++,
-        group: $scope.currentAnnotationGroup,
+        group: pinnedGroup,
         user: $scope.currentUser,
         comment: {
           type: 'normal',
@@ -162,8 +179,13 @@ Workspace.controller('AnnotationDetailsCtrl', [
         })
       ], {
         evented: false,
-        originX: 'center',
-        originY: 'center'
+        top: self.origX,
+        left: self.origY,
+        lockScalingX: false,
+        lockScalingY: false,
+        selectable: (function() {
+          return $scope.selectable;
+        })()
       });
     };
     timeoutFunc = function() {
@@ -220,6 +242,9 @@ Workspace.controller('AnnotationDetailsCtrl', [
     $scope.fabric.canvas.on('object:added', function(obj) {
       var _ref;
       if ($scope.currentTool.annotating) {
+        obj.target.selectable = (function() {
+          return $scope.selectable;
+        })();
         $scope.currentAnnotationGroup.push(obj.target);
       }
       if ((_ref = $scope.currentTool.events) != null) {
@@ -229,11 +254,11 @@ Workspace.controller('AnnotationDetailsCtrl', [
       }
       $scope.fabric.canvas.renderAll();
       $scope.fabric.canvas.calcOffset();
-      if (!$scope.origX) {
-        $scope.origX = obj.target.top - 15;
+      if (!self.origX) {
+        self.origX = obj.target.top - 15;
       }
-      if (!$scope.origY) {
-        $scope.origY = obj.target.left - 15;
+      if (!self.origY) {
+        self.origY = obj.target.left - 15;
       }
       return em.unit;
     });
