@@ -17,6 +17,9 @@ body {
   background-color: #68a8c1;
   border: 1px solid #41768b;
 }
+.btn.btn-primary:hover {
+  background-color: #569eba;
+}
 .btn.btn-default {
   background-color: #eee;
   border: 1px solid #ddd;
@@ -28,6 +31,8 @@ body {
   padding: 0;
   margin: 15px 0;
   height: 38px;
+  position: relative;
+  z-index: 999;
 }
 .annotations-toolbar li {
   float: left;
@@ -40,6 +45,15 @@ body {
   border-right: none;
   cursor: pointer;
   color: #666;
+}
+.annotations-toolbar li .tool-options {
+  display: none;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.annotations-toolbar li .tool-options li {
+  border-right: 1px solid #ccc;
 }
 .annotations-toolbar li .icon {
   float: left;
@@ -57,6 +71,9 @@ body {
 }
 .annotations-toolbar li:hover .icon {
   fill: #555;
+}
+.annotations-toolbar li:hover .tool-options {
+  display: block;
 }
 .annotations-toolbar li.active {
   background: #fff;
@@ -89,7 +106,7 @@ body {
 .canvas-holder {
   background: #fff;
   border: 10px solid #fff;
-  overflow: auto;
+  overflow: scroll;
 }
 .canvas-holder .annotations-canvas {
   margin: 0 auto;
@@ -108,11 +125,25 @@ body {
   list-style: none;
 }
 .annotations-carousel ul li {
-  width: 80px;
   height: 60px;
   background: #fff;
   float: left;
   margin: 15px 0 0 12px;
+  text-align: center;
+  border-radius: 0;
+}
+.annotations-carousel ul li.thumb {
+  padding: 5px;
+}
+.annotations-carousel ul li.thumb img {
+  height: 100%;
+  padding: 0;
+}
+.annotations-carousel ul li.thumb:hover {
+  background: #fff;
+}
+.annotations-carousel ul li.thumb.active {
+  background: #abdcef;
 }
 .annotations-carousel ul li.previous,
 .annotations-carousel ul li.next {
@@ -166,7 +197,7 @@ body {
 .comment-list li.user-input textarea:focus {
   outline: none;
 }
-.comment-list li.seperator {
+.comment-list li.separator {
   background: #41768b;
   margin: 30px 0;
   height: 1px;

@@ -26,6 +26,10 @@ body {
     &.btn-primary {
         background-color: #68a8c1;
         border: 1px solid #41768b;
+
+        &:hover {
+            background-color: darken(#68a8c1, 5%);
+        }
     }
 
     &.btn-default {
@@ -33,7 +37,6 @@ body {
         border: 1px solid #ddd;
     }
 }
-
 
 /* Annotations Specific */
 
@@ -43,6 +46,8 @@ body {
     padding: 0;
     margin: 15px 0;
     height: 38px;
+    position: relative;
+    z-index: 999;
 
     li {
         float: left;
@@ -55,6 +60,17 @@ body {
         border-right: none;
         cursor: pointer;
         color: #666;
+
+        .tool-options {
+            display: none;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+
+            li {
+                border-right: 1px solid #ccc;
+            }
+        }
 
         .icon {
             float: left;
@@ -75,6 +91,10 @@ body {
 
             .icon {
                 fill: #555;
+            }
+
+            .tool-options {
+                display: block;
             }
         }
 
@@ -118,7 +138,7 @@ body {
 .canvas-holder {
     background: #fff;
     border: 10px solid #fff;
-    overflow: auto;
+    overflow: scroll;
 
     .annotations-canvas {
         margin: 0 auto;
@@ -140,11 +160,30 @@ body {
         list-style: none;
 
         li {
-            width: 80px;
             height: 60px;
             background: #fff;
             float: left;
             margin: 15px 0 0 12px;
+            text-align: center;
+            border-radius: 0;
+
+
+            &.thumb {
+                padding: 5px;
+
+                img {
+                    height: 100%;
+                    padding: 0;
+                }
+
+                &:hover {
+                    background: #fff;
+                }
+
+                &.active {
+                    background: #abdcef;
+                }
+            }
 
             &.previous,
             &.next {
@@ -213,7 +252,7 @@ body {
             }
         }
 
-        &.seperator {
+        &.separator {
             background: #41768b;
             margin: 30px 0;
             height: 1px;

@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="css/bootstrap.css">
     <link rel="stylesheet" href="css/dashboard.css">
     <link rel="stylesheet" href="js/vendor/angular/ng-table/ng-table.min.css">
+    <link rel="stylesheet" href="css/colorpicker.css">
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/fabric.css">
 
@@ -28,12 +29,12 @@
         <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
             <div class="container-fluid">
                <div class="navbar-header">
-                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+<!--                     <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
                         <span class="sr-only">Toggle navigation</span>
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
-                    </button>
+                    </button> -->
                     <a class="navbar-brand" href="#">Highlights for Children</a>
                 </div>
                 <div class="navbar-collapse collapse">
@@ -70,6 +71,8 @@
         <script src="js/vendor/fabric/fabric.js"></script>
         <script src="js/vendor/moment/moment.min.js"></script>
         <script src="js/vendor/md5/md5.js"></script>
+        <!-- import modules -->
+        <script src="js/vendor/angular/ng-colorpicker/colorpicker.js"></script>
 
         <script src="js/main.js"></script>
         <!-- bring in services! -->
@@ -77,10 +80,12 @@
         <script src="js/services/fabricJsService.js"></script>
 
         <!-- bring in controllers! -->
+        <script src="js/controllers/SidebarCtrl.js"></script>
         <script src="js/controllers/AnnotationCtrl.js"></script>
         <script src="js/controllers/DashboardCtrl.js"></script>
         <script src="js/controllers/ProjectCtrl.js"></script>
         <script src="js/controllers/AnnotationDetailsCtrl.js"></script>
         <script src="js/controllers/ProjectDetailsCtrl.js"></script>
+
     </body>
 </html>
