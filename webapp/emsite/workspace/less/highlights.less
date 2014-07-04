@@ -46,6 +46,8 @@ body {
     padding: 0;
     margin: 15px 0;
     height: 38px;
+    position: relative;
+    z-index: 999;
 
     li {
         float: left;
@@ -58,6 +60,17 @@ body {
         border-right: none;
         cursor: pointer;
         color: #666;
+
+        .tool-options {
+            display: none;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+
+            li {
+                border-right: 1px solid #ccc;
+            }
+        }
 
         .icon {
             float: left;
@@ -78,6 +91,10 @@ body {
 
             .icon {
                 fill: #555;
+            }
+
+            .tool-options {
+                display: block;
             }
         }
 

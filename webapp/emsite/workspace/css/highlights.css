@@ -31,6 +31,8 @@ body {
   padding: 0;
   margin: 15px 0;
   height: 38px;
+  position: relative;
+  z-index: 999;
 }
 .annotations-toolbar li {
   float: left;
@@ -43,6 +45,15 @@ body {
   border-right: none;
   cursor: pointer;
   color: #666;
+}
+.annotations-toolbar li .tool-options {
+  display: none;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.annotations-toolbar li .tool-options li {
+  border-right: 1px solid #ccc;
 }
 .annotations-toolbar li .icon {
   float: left;
@@ -60,6 +71,9 @@ body {
 }
 .annotations-toolbar li:hover .icon {
   fill: #555;
+}
+.annotations-toolbar li:hover .tool-options {
+  display: block;
 }
 .annotations-toolbar li.active {
   background: #fff;

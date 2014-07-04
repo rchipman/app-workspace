@@ -1,13 +1,3 @@
-# Workspace.controller 'AnnotationDetailsCtrl',
-# ['$scope', '$stateParams', 'annotationService',
-# ($scope, $stateParams, annotationService) ->
-#     $scope.currentAnnotation = _.find annotationService.mockData,
-#     (item) ->
-#     	item.annotation.id is parseInt $stateParams.annotationID
-#     em.unit
-# ]
-
-
 # working js file is located at AnnotationDetailsCtrl_orig.js
 # this is a buggy CoffeeScript
 Workspace.controller 'AnnotationDetailsCtrl',
@@ -17,14 +7,15 @@ Workspace.controller 'AnnotationDetailsCtrl',
 	$rootScope.$broadcast 'navigatedTo', 'Annotations'
 	$scope.selectable = false
 	$scope.canSelect = () -> $scope.selectable
-	$scope.color = '#000fff'
+	$scope.colorpicker =
+		hex: '#ddd'
 	$scope.brushWidth = 5
-	self.mouseDown = null # look I defined this here in the controller, this is probably bad !!!
-	self.origX = 0 # !!!
-	self.origY = 0 # !!!
+	$scope.mouseDown = null # look I defined this here in the controller, this is probably bad !!!
+	$scope.left = 0 # !!!
+	$scope.top = 0 # !!!
 	$scope.currentCommentIndex = 1 # should probably be deprecated to have annotation index tied to comment index
 	$scope.newCommentText = null
-	$scope.annotations = []		# holds all annotation groups (should be one per unique annotation w/ comment)
+	$scope.annotations = []	# holds all annotation groups (should be one per unique annotation w/ comment)
 	metaUser =
 		type: 'normal'
 		name: 'Rob'
@@ -35,6 +26,7 @@ Workspace.controller 'AnnotationDetailsCtrl',
 	$scope.comments = [] # probably deprecated
 	# $scope.thumbs = []
 	# $scope.approvalHash = {} # empty obj for user: approval kv pairs
+	$scope.shapeToolType = 'circle'
 
 	$scope.thumbs = [
 		{ name: 'Maybe Art', src: 'img/BlueBus.jpg', id: 104 }
@@ -43,37 +35,180 @@ Workspace.controller 'AnnotationDetailsCtrl',
 		{ name: 'Great Art', src: 'img/TigerTug.jpg', id: 103 }
 	]
 
+	getSelf = (name) ->
+		_.find(toolkit, name: name)
 
-
-	# comment =
-	# {
-	# 	type: 'normal'
-	# 	name: 'Rob'
-	# 	email: md5 'jrchipman1@gmail.com'
-	# 	text: 'This is a comment that some dude left on here. cool.'
-	# 	annotationId: 3
-	# 	timestamp: moment().fromNow()
-	# }
-
-	# comment2 =
-	# {
-	# 	type: 'normal'
-	# 	name: 'Chris'
-	# 	email: md5 'test@gmail.com'
-	# 	text: 'Hey, what about the thing on the right here, don\'t forget to do the stuff.'
-	# 	annotationId: 2
-	# 	timestamp: moment().subtract('minutes', 30).fromNow()
-	# }
-
-	# comment3 =
-	# {
-	# 	type: 'normal'
-	# 	name: 'Adam'
-	# 	email: md5 'test@gmail.com'
-	# 	text: 'I dont feel like the sky is as blue as it could be, perhaps we should revisit?'
-	# 	annotationId: 1
-	# 	timestamp: moment().subtract('days', 1).fromNow()
-	# }
+	toolkit = [
+		{
+			name: 'disabled'
+			properties: {
+				isDrawingMode: false
+			}
+			annotating: false,
+		},
+		{
+			name: 'draw'
+			properties: {
+				isDrawingMode: true # this may be the only thing necessary
+			}
+			annotating: true
+		},
+		{
+			name: 'move'
+			properties: {
+				isDrawingMode: false
+			}
+			annotating: false
+		},
+		{
+			name: 'shape'
+			properties: {
+				isDrawingMode: false
+			}
+			annotating: true
+			type: 'circle'
+			# index of types is same as blanks, useful or dumb
+			types: [
+				{} =
+					name: 'circle'
+					type: fabric.Circle
+					blank:
+						radius: 1
+						strokeWidth: 5
+						stroke: $scope.colorpicker.hex
+						selectable: false
+						fill: ""
+						originX: 'left'
+						originY: 'top'
+					drawparams: (pointer) ->
+						radius: Math.abs $scope.left - pointer.x
+				{} =
+					name: 'rectangle'
+					type: fabric.Rect
+					blank:
+						height: 1
+						width: 1
+						strokeWidth: 5
+						stroke: $scope.colorpicker.hex
+						selectable: false
+						fill: ""
+						originX: 'left'
+						originY: 'top'
+					drawparams: (pointer) ->
+						width: -$scope.left + pointer.x
+						height: -$scope.top + pointer.y
+			]
+			events: {
+				mouseup: (e, canvas) ->
+					# not sure if this is best way to do this
+					# do I even need to pass 'canvas' if it will be valid within executing scope?
+					# definitely don't want to put a lot of junk on $scope if I don't have to
+					$scope.mouseDown = false # theses $scope properties are probably a really bad convention, but it works
+				mousedown: (e, canvas) ->
+					$scope.mouseDown = true # gotta be a better way !!!
+					pointer = canvas.getPointer e.e
+					we = getSelf 'shape'
+					type = _.findWhere $scope.currentTool.types, name: $scope.currentTool.type
+					spec = type.blank
+					spec.left = pointer.x
+					spec.top = pointer.y
+					shape = new type.type spec
+					canvas.add shape
+					em.unit
+				objectadded: null
+				mousemove: (e, canvas) ->
+					if $scope.mouseDown # just awful !!!
+						we = getSelf('shape')
+						pointer = canvas.getPointer e.e
+						# need to find some way to get the shape now
+						shape = canvas.getObjects()[canvas.getObjects().length-1]
+						type = _.findWhere $scope.currentTool.types, name: $scope.currentTool.type
+						shape.set type.drawparams pointer
+						canvas.renderAll()
+					em.unit
+				}
+			},
+				{
+					name: 'comment'
+					properties: {
+						isDrawingMode: false
+					}
+					annotating: true # this is possibly broken because currently the pin is placed at last object
+					events: {
+						mouseup: null # will want to put something here !!!
+						mousedown: null
+						objectadded: null # then we should fully integrate the
+					}
+				},
+				{
+					name: 'arrow' # see below $$$
+					properties: {
+						isDrawingMode: false
+					}
+					annotating: true
+				},
+				{
+					name: 'text' # fabric has an existing text tool, need to find out how to use $$$
+					properties: {
+						isDrawingMode: false
+					}
+					annotating: true
+				},
+				{
+					name: 'zoom' # this implementation sucks !!! $$$
+					properties: {
+						isDrawingMode :false
+					}
+					annotating: false
+					events: {
+						mouseup: null
+						mousemove: (o, canvas) ->
+							if $scope.mouseDown
+								# this just doesn't work very well !!!
+								SCALE_FACTOR = 0.01
+								pointer = canvas.getPointer o.e
+								delta = $scope.left - pointer.x
+								objects = canvas.getObjects()
+								# needs changes !!!
+								delta = delta * SCALE_FACTOR
+								transform = [1+delta,0,0,1+delta,0,0]
+								console.log transform
+								for klass in objects
+									# transformMatrix([scalex, shear, shear, scaley, translatex, translatey])
+									# klass.setCoords()
+									# klass.scaleX = delta
+									# klass.scaleY = delta
+									# klass.top = klass.top * delta
+									# klass.left = klass.left * delta
+									# klass.setCoords()
+									klass.transformMatrix = transform
+									klass.setCoords()
+								# can we also transform the canvas background?
+								canvas.backgroundImage.transformMatrix = transform  # works
+								canvas.setWidth canvas.backgroundImage.width * canvas.backgroundImage.transformMatrix[0]
+								canvas.setHeight canvas.backgroundImage.height * canvas.backgroundImage.transformMatrix[3]
+								# apparently, yes!
+								# works great but doesn't affect pins yet
+						mousedown: (o, canvas) ->
+							$scope.left = canvas.getPointer(o.e).x
+					}
+				},
+				{
+					name: 'colorpicker' # no implementation $$$
+					properties: {}
+					annotating: false
+				},
+				{
+					name: 'load' # temporary?
+					properties: {}
+					annotating: false
+				},
+				{
+					name: 'export'
+					properties: {}
+					annotating: false
+				}
+	]
 
 	# Highlights UI stuff, to be deleted
 	# $scope.comments = [comment,comment2,comment3]
@@ -129,37 +264,7 @@ Workspace.controller 'AnnotationDetailsCtrl',
 				em.unit
 			}
 		em.unit
-	$scope.removeComment = (annotationid) ->
-		which = _.findWhere $scope.annotations, id: annotationid
-		$scope.fabric.canvas.remove which.group
-		$scope.annotations = _.without $scope.annotations, which
-		em.unit
-	$scope.addComment = () ->
-		pin = commentPin()
-		$scope.currentAnnotationGroup.push pin
-		pinnedGroup = new fabric.Group $scope.currentAnnotationGroup
-		for obj in $scope.currentAnnotationGroup
-			$scope.fabric.canvas.remove obj
-		pinnedGroup._restoreObjectsState()
-		$scope.fabric.canvas.add pinnedGroup
-		# self.origX = null
-		# self.origY = null
-		annotationSpec =
-			id: $scope.currentCommentIndex++
-			group: pinnedGroup
-			user: $scope.currentUser
-			comment:
-				type: 'normal'
-				text: $scope.newCommentText
-				timestamp: moment().fromNow()
 
-		# now push annotation info to scope for longer-term tracking
-		# console.log annotationSpec
-		$scope.annotations.unshift annotationSpec
-		$scope.currentAnnotationGroup = []
-		$scope.newCommentText = null
-		$scope.readyToComment = false
-		em.unit
 
 	$scope.selectTool = (toolname) ->
 		$scope.currentTool = _.findWhere $scope.fabric.toolkit, name: toolname
@@ -168,9 +273,18 @@ Workspace.controller 'AnnotationDetailsCtrl',
 			$scope.fabric.canvas[prop] = $scope.currentTool.properties[prop]
 		# this shit is broke !!!
 		if $scope.currentTool.name is 'draw'
-			$scope.fabric.canvas.freeDrawingBrush.color = $scope.color
+			$scope.fabric.canvas.freeDrawingBrush.color = $scope.colorpicker.hex
 			$scope.fabric.canvas.freeDrawingBrush.width = $scope.brushWidth
 		em.unit
+
+	$scope.setShapeTypeFromUi = (type) ->
+		$scope.currentTool = _.findWhere $scope.fabric.toolkit, name: 'shape'
+		$scope.currentTool.type = type
+		$scope.shapeToolType = $scope.currentTool.type
+		for prop of $scope.currentTool.properties
+			$scope.fabric.canvas[prop] = $scope.currentTool.properties[prop]
+		em.unit
+
 
 	# $scope.setApproval = (user, approvalState) ->
 	# 	$scope.approvalHash[user] = approvalState # totally unsafe
@@ -187,6 +301,7 @@ Workspace.controller 'AnnotationDetailsCtrl',
 		item.annotation.id is parseInt $stateParams.annotationID
 	# uses init function to create the fabric environment
 	$scope.fabric = fabricJsService.init $scope.currentAnnotation.annotation.path
+	$scope.fabric.toolkit = toolkit
 	$scope.selectTool 'draw'
 	$scope.eventIndex = 0
 	$scope.annotationAction = null
@@ -204,13 +319,13 @@ Workspace.controller 'AnnotationDetailsCtrl',
 	the pin should be rendered on screen somewhere appropriate and...
 	the comment should be added to scope with annotationGroup data to be attached to comment
 	###
-	$scope.cancelComment = () ->
-		console.log $scope.currentAnnotationGroup
-		console.log $scope.currentAnnotationGroupId
-		console.log $scope.currentCommentIndex
-		console.log $scope.annotations
 
-
+	$scope.setShapeType = (type) ->
+		if type is 'circle'
+			$scope.currentTool.type = fabric.Circle
+		else if type is 'rectangle'
+			$scope.currentTool.type = fabric.Rect
+		em.unit
 
 	commentPin = () ->
 		# should handle this drop point some better way
@@ -239,39 +354,79 @@ Workspace.controller 'AnnotationDetailsCtrl',
 				}
 		],
 			{
-				evented: false
-				top: self.origX
-				left: self.origY
+				evented: true
+				top: $scope.top - 15
+				left: $scope.left - 15
 				lockScalingX: false
 				lockScalingY: false
 				selectable: (() -> $scope.selectable)()
-				# originX: 'center'
-				# originY: 'center'
 			}
 
-	timeoutFunc = () ->
-		$scope.events.push {id: $scope.eventIndex += 1,  text: 'Object added!'}
+	readyToComment = () ->
 		# lazy prompting and comment addition
+		pin = commentPin()
+		$scope.fabric.canvas.add pin
+		$scope.currentAnnotationGroup.push pin
 		$scope.readyToComment = true
 		$timeout (() -> $('#user-comment-input').focus()), 100
 		$scope.selectTool 'disabled'
-		$scope.$apply()  # is this even necessary here?
+		$('.upper-canvas').css({'background':'rgba(255,255,255,0.7)'})
+		em.unit
+
+	$scope.addComment = () ->
+		annotationSpec =
+			id: $scope.currentCommentIndex++
+			group: $scope.currentAnnotationGroup
+			user: $scope.currentUser
+			comment:
+				type: 'normal'
+				text: $scope.newCommentText
+				timestamp: moment().fromNow()
+
+		# now push annotation info to scope for longer-term tracking
+		# console.log annotationSpec
+		$scope.annotations.unshift annotationSpec
+		$scope.currentAnnotationGroup = []
+		$scope.newCommentText = null
+		$scope.readyToComment = false
+		$('.upper-canvas').css({'background':'none'})
+		$scope.left = null
+		$scope.top = null
+		em.unit
+
+	$scope.removeComment = (annotationid) ->
+		currentAnnotation = _.findWhere $scope.annotations, id: annotationid
+		_.forEach currentAnnotation.group, (item) ->
+			$scope.fabric.canvas.remove item
+		$scope.annotations = _.without $scope.annotations, currentAnnotation
+		em.unit
+
+	$scope.cancelComment = () ->
+		_.forEach $scope.currentAnnotationGroup, (item) ->
+			$scope.fabric.canvas.remove item
+		$scope.readyToComment = false
+		$('.upper-canvas').css({'background':'none'})
 		em.unit
 
 	$scope.fabric.canvas.on 'mouse:down', (e) ->
-		self.mouseDown = true
+		console.log 'click location: ', e.e
+		$scope.mouseDown = true
 		if $scope.annotationAction isnt null
 			$timeout.cancel $scope.annotationAction
 		pointer = $scope.fabric.canvas.getPointer e.e
-		self.origX = pointer.x
-		self.origY = pointer.y
+		if $scope.currentTool.name is 'comment'
+			$scope.left = pointer.x
+			$scope.top = pointer.y
 		$scope.currentTool.events?.mousedown? e, $scope.fabric.canvas
 		em.unit
 
 	$scope.fabric.canvas.on 'mouse:up', (e) ->
-		self.mouseDown = false
+		$scope.mouseDown = false
 		if $scope.currentTool.annotating
-			$scope.annotationAction = $timeout timeoutFunc, 2000
+			if $scope.currentTool.name is 'comment'
+				readyToComment()
+			else
+				$scope.annotationAction = $timeout readyToComment, 1000
 		$scope.currentTool.events?.mouseup? e, $scope.fabric.canvas
 		em.unit
 
@@ -287,8 +442,8 @@ Workspace.controller 'AnnotationDetailsCtrl',
 		# this may not be the best place for these, but it needs to happen somewhat regularly
 		$scope.fabric.canvas.renderAll()
 		$scope.fabric.canvas.calcOffset()
-		self.origX = obj.target.top - 15 if !self.origX
-		self.origY = obj.target.left - 15 if !self.origY
+		$scope.left = obj.target.left if !$scope.left
+		$scope.top = obj.target.top if !$scope.top
 		em.unit
 	em.unit
 ]
