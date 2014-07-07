@@ -22,10 +22,6 @@ Workspace.controller 'AnnotationDetailsCtrl',
 		email: md5 'jrchipman1@gmail.com'
 
 	$scope.currentUser = metaUser
-	$scope.events = []			# events attribute holds information about the unique event
-	$scope.comments = [] # probably deprecated
-	# $scope.thumbs = []
-	# $scope.approvalHash = {} # empty obj for user: approval kv pairs
 	$scope.shapeToolType = 'circle'
 
 	$scope.thumbs = [
@@ -174,13 +170,6 @@ Workspace.controller 'AnnotationDetailsCtrl',
 								transform = [1+delta,0,0,1+delta,0,0]
 								console.log transform
 								for klass in objects
-									# transformMatrix([scalex, shear, shear, scaley, translatex, translatey])
-									# klass.setCoords()
-									# klass.scaleX = delta
-									# klass.scaleY = delta
-									# klass.top = klass.top * delta
-									# klass.left = klass.left * delta
-									# klass.setCoords()
 									klass.transformMatrix = transform
 									klass.setCoords()
 								# can we also transform the canvas background?
@@ -210,11 +199,13 @@ Workspace.controller 'AnnotationDetailsCtrl',
 				}
 	]
 
-	# Highlights UI stuff, to be deleted
-	# $scope.comments = [comment,comment2,comment3]
-	# $scope.approved = [1..4]	# deprecated? unless property approach more favored in angular vs methods?
-	# $scope.rejected = [1]		# deprecated? maybe not since method method doesn't work?
-	# $scope.images = [1..6]		# deprecated but so is below line since thumb generation is free from EM
+	$scope.testSocket = () ->
+		socket = io()
+		console.log socket
+		# emit the 'test socket' event to be heard by the listener
+		socket.emit 'test socket', 'a string was sent'
+		em.unit
+
 	$scope.loadImages = () ->
 		markers = {
 			"query": [
@@ -267,14 +258,15 @@ Workspace.controller 'AnnotationDetailsCtrl',
 
 
 	$scope.selectTool = (toolname) ->
-		$scope.currentTool = _.findWhere $scope.fabric.toolkit, name: toolname
-		# do whatever else needs to happen !!!
-		for prop of $scope.currentTool.properties
-			$scope.fabric.canvas[prop] = $scope.currentTool.properties[prop]
-		# this shit is broke !!!
-		if $scope.currentTool.name is 'draw'
-			$scope.fabric.canvas.freeDrawingBrush.color = $scope.colorpicker.hex
-			$scope.fabric.canvas.freeDrawingBrush.width = $scope.brushWidth
+		if not $scope.readyToComment
+			$scope.currentTool = _.findWhere $scope.fabric.toolkit, name: toolname
+			# do whatever else needs to happen !!!
+			for prop of $scope.currentTool.properties
+				$scope.fabric.canvas[prop] = $scope.currentTool.properties[prop]
+			# this shit is broke !!!
+			if $scope.currentTool.name is 'draw'
+				$scope.fabric.canvas.freeDrawingBrush.color = $scope.colorpicker.hex
+				$scope.fabric.canvas.freeDrawingBrush.width = $scope.brushWidth
 		em.unit
 
 	$scope.setShapeTypeFromUi = (type) ->
@@ -328,10 +320,7 @@ Workspace.controller 'AnnotationDetailsCtrl',
 		em.unit
 
 	commentPin = () ->
-		# should handle this drop point some better way
-		# currently this method does not support the use of the comment tool (irony)
-
-		# also this needs to be fixed to use a properly bordered circle instead of two circles
+		# this needs to be fixed to use a properly bordered circle instead of two circles
 		new fabric.Group [
 			new fabric.Circle({
 				radius: 18.5
@@ -359,15 +348,15 @@ Workspace.controller 'AnnotationDetailsCtrl',
 				left: $scope.left - 15
 				lockScalingX: false
 				lockScalingY: false
-				selectable: (() -> $scope.selectable)()
+				selectable: $scope.selectable()
 			}
 
 	readyToComment = () ->
-		# lazy prompting and comment addition
+		$scope.readyToComment = true
+		$scope.fabric.canvas.isDrawingMode = false
 		pin = commentPin()
 		$scope.fabric.canvas.add pin
 		$scope.currentAnnotationGroup.push pin
-		$scope.readyToComment = true
 		$timeout (() -> $('#user-comment-input').focus()), 100
 		$scope.selectTool 'disabled'
 		$('.upper-canvas').css({'background':'rgba(255,255,255,0.7)'})
@@ -417,7 +406,8 @@ Workspace.controller 'AnnotationDetailsCtrl',
 		if $scope.currentTool.name is 'comment'
 			$scope.left = pointer.x
 			$scope.top = pointer.y
-		$scope.currentTool.events?.mousedown? e, $scope.fabric.canvas
+		if not $scope.readyToComment
+			$scope.currentTool.events?.mousedown? e, $scope.fabric.canvas
 		em.unit
 
 	$scope.fabric.canvas.on 'mouse:up', (e) ->
@@ -436,7 +426,7 @@ Workspace.controller 'AnnotationDetailsCtrl',
 
 	$scope.fabric.canvas.on 'object:added', (obj) ->
 		if $scope.currentTool.annotating
-			obj.target.selectable = (()-> $scope.selectable)()
+			obj.target.selectable = $scope.canSelect()
 			$scope.currentAnnotationGroup.push obj.target
 		$scope.currentTool.events?.objectadded? obj, $scope.fabric.canvas
 		# this may not be the best place for these, but it needs to happen somewhat regularly
