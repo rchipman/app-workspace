@@ -1,10 +1,13 @@
 # working js file is located at AnnotationDetailsCtrl_orig.js
 # this is a buggy CoffeeScript
 Workspace.controller 'AnnotationDetailsCtrl',
-['$rootScope', '$scope', '$stateParams', '$timeout', 'annotationService', 'fabricJsService',
-($rootScope, $scope, $stateParams, $timeout, annotationService, fabricJsService) ->
+['$rootScope', '$scope', '$stateParams', '$timeout', 'annotationService', 'fabricJsService', 'annotationSocket',
+($rootScope, $scope, $stateParams, $timeout, annotationService, fabricJsService, annotationSocket) ->
 
 	$rootScope.$broadcast 'navigatedTo', 'Annotations'
+	annotationSocket.forward('newCommentAddedResponse', $scope);
+
+
 	$scope.selectable = false
 	$scope.canSelect = () -> $scope.selectable
 	$scope.colorpicker =
@@ -199,11 +202,10 @@ Workspace.controller 'AnnotationDetailsCtrl',
 				}
 	]
 
+
 	$scope.testSocket = () ->
-		socket = io()
-		console.log socket
 		# emit the 'test socket' event to be heard by the listener
-		socket.emit 'test socket', 'a string was sent'
+
 		em.unit
 
 	$scope.loadImages = () ->
@@ -348,7 +350,7 @@ Workspace.controller 'AnnotationDetailsCtrl',
 				left: $scope.left - 15
 				lockScalingX: false
 				lockScalingY: false
-				selectable: $scope.selectable()
+				selectable: true
 			}
 
 	readyToComment = () ->
@@ -357,7 +359,10 @@ Workspace.controller 'AnnotationDetailsCtrl',
 		pin = commentPin()
 		$scope.fabric.canvas.add pin
 		$scope.currentAnnotationGroup.push pin
-		$timeout (() -> $('#user-comment-input').focus()), 100
+		$timeout (() ->
+			$('#user-comment-input').focus()
+			em.unit
+		), 100
 		$scope.selectTool 'disabled'
 		$('.upper-canvas').css({'background':'rgba(255,255,255,0.7)'})
 		em.unit
@@ -381,6 +386,7 @@ Workspace.controller 'AnnotationDetailsCtrl',
 		$('.upper-canvas').css({'background':'none'})
 		$scope.left = null
 		$scope.top = null
+		annotationSocket.emit 'newCommentAdded', annotationSpec
 		em.unit
 
 	$scope.removeComment = (annotationid) ->
@@ -395,6 +401,15 @@ Workspace.controller 'AnnotationDetailsCtrl',
 			$scope.fabric.canvas.remove item
 		$scope.readyToComment = false
 		$('.upper-canvas').css({'background':'none'})
+		em.unit
+
+	# Server raised events
+	$scope.$on 'socket:newCommentAddedResponse', (e, data) ->
+		# add the annotation group to the canvas
+		# add the comment to the comment array
+		# $scope.fabric.canvas.add item for item in data.group
+		console.log 'data group: ', data.group
+		$scope.annotations.push data
 		em.unit
 
 	$scope.fabric.canvas.on 'mouse:down', (e) ->

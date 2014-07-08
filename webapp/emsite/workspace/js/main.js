@@ -13,7 +13,7 @@ em = (function() {
 
 })();
 
-Workspace = angular.module('Workspace', ['ui.router', 'ngTable', 'colorpicker.module']);
+Workspace = angular.module('Workspace', ['ui.router', 'ngTable', 'colorpicker.module', 'btford.socket-io']);
 
 Workspace.run([
 	'$rootScope', '$state', '$stateParams', function($rootScope, $state, $stateParams) {
