@@ -129,7 +129,6 @@ Workspace.controller 'AnnotationDetailsCtrl',
 					blank:
 						radius: 1
 						strokeWidth: 5
-						stroke: $scope.colorpicker.hex
 						selectable: false
 						fill: ""
 						originX: 'left'
@@ -143,7 +142,6 @@ Workspace.controller 'AnnotationDetailsCtrl',
 						height: 1
 						width: 1
 						strokeWidth: 5
-						stroke: $scope.colorpicker.hex
 						selectable: false
 						fill: ""
 						originX: 'left'
@@ -164,6 +162,7 @@ Workspace.controller 'AnnotationDetailsCtrl',
 					we = getSelf 'shape'
 					type = _.findWhere $scope.currentTool.types, name: $scope.currentTool.type
 					spec = type.blank
+					spec.stroke = $scope.colorpicker.hex	# this is how we avoid the stupid broken color problem
 					spec.left = pointer.x
 					spec.top = pointer.y
 					shape = new type.type spec
