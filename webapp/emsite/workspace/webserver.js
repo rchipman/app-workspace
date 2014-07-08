@@ -34,15 +34,18 @@ http = http.createServer(requestHandler);
 io = require('socket.io')(http);
 
 io.on('connection', function(socket) {
-  socket.on('newCommentAdded', function(data) {
-    console.log("got some data");
-    socket.broadcast.emit('newCommentAddedResponse', data);
+  socket.on('updateAnnotation', function(data) {
+    console.log('updateAnnotation');
+    socket.broadcast.emit('updateAnnotationResponse', data);
+    return em.unit;
+  });
+  socket.on('removeAnnotation', function(data) {
+    console.log('removeAnnotation');
+    socket.broadcast.emit('removeAnnotationResponse', data);
     return em.unit;
   });
   return em.unit;
 });
-
-em.unit;
 
 http.listen(3000, function() {
   console.log('listening on *:3000');

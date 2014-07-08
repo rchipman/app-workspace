@@ -4,7 +4,8 @@ Workspace.controller('AnnotationDetailsCtrl', [
   '$rootScope', '$scope', '$stateParams', '$timeout', 'annotationService', 'fabricJsService', 'annotationSocket', function($rootScope, $scope, $stateParams, $timeout, annotationService, fabricJsService, annotationSocket) {
     var applicationid, commentPin, getSelf, metaUser, readyToComment, toolkit, usefulKeys;
     $rootScope.$broadcast('navigatedTo', 'Annotations');
-    annotationSocket.forward('newCommentAddedResponse', $scope);
+    annotationSocket.forward('updateAnnotationResponse', $scope);
+    annotationSocket.forward('removeAnnotationResponse', $scope);
     /*
     	INITIALIZE CANVAS
     */
@@ -407,12 +408,8 @@ Workspace.controller('AnnotationDetailsCtrl', [
       });
     };
     readyToComment = function() {
-      var pin;
       $scope.readyToComment = true;
       $scope.fabric.canvas.isDrawingMode = false;
-      pin = commentPin();
-      $scope.fabric.canvas.add(pin);
-      $scope.currentAnnotationGroup.push(pin);
       $timeout((function() {
         $('#user-comment-input').focus();
         return em.unit;
@@ -424,7 +421,10 @@ Workspace.controller('AnnotationDetailsCtrl', [
       return em.unit;
     };
     $scope.addComment = function() {
-      var annotationSpec;
+      var annotationSpec, pin;
+      pin = commentPin();
+      $scope.fabric.canvas.add(pin);
+      $scope.currentAnnotationGroup.push(pin);
       annotationSpec = {
         id: $scope.currentAnnotationIndex++,
         group: $scope.currentAnnotationGroup,
@@ -444,18 +444,19 @@ Workspace.controller('AnnotationDetailsCtrl', [
       });
       $scope.left = null;
       $scope.top = null;
-      annotationSocket.emit('newCommentAdded', $scope.fabric.canvas.toJSON());
+      annotationSocket.emit('updateAnnotation', JSON.stringify(annotationSpec));
       return em.unit;
     };
     $scope.removeComment = function(annotationid) {
-      var currentAnnotation;
-      currentAnnotation = _.findWhere($scope.annotations, {
+      var annotationToRemove;
+      annotationToRemove = _.findWhere($scope.annotations, {
         id: annotationid
       });
-      _.forEach(currentAnnotation.group, function(item) {
+      annotationSocket.emit('removeAnnotation', annotationid);
+      _.forEach(annotationToRemove.group, function(item) {
         return $scope.fabric.canvas.remove(item);
       });
-      $scope.annotations = _.without($scope.annotations, currentAnnotation);
+      $scope.annotations = _.without($scope.annotations, annotationToRemove);
       return em.unit;
     };
     $scope.cancelComment = function() {
@@ -463,16 +464,13 @@ Workspace.controller('AnnotationDetailsCtrl', [
         return $scope.fabric.canvas.remove(item);
       });
       $scope.readyToComment = false;
+      $scope.newCommentText = null;
+      $scope.currentAnnotationGroup = [];
       $('.upper-canvas').css({
         'background': 'none'
       });
       return em.unit;
     };
-    $scope.$on('socket:newCommentAddedResponse', function(e, data) {
-      $scope.fabric.canvas.clear();
-      $scope.fabric.canvas.loadFromJSON(data);
-      return em.unit;
-    });
     /*
     	Because of fabric.js quirks with object addition (on addition to the canvas, the object is mutated to a state where it cannot be added again)
     	the logic for transmitting the state of the canvas must not rely on the ability to pass the objects
@@ -490,6 +488,36 @@ Workspace.controller('AnnotationDetailsCtrl', [
     	FABRIC CANVAS EVENT HANDLERS
     */
 
+    $scope.$on('socket:updateAnnotationResponse', function(e, data) {
+      var annotationGroup;
+      annotationGroup = JSON.parse(data);
+      annotationGroup.id = $scope.currentAnnotationIndex++;
+      fabric.util.enlivenObjects(annotationGroup.group, function(group) {
+        var origRenderOnAddRemove;
+        origRenderOnAddRemove = $scope.fabric.canvas.renderOnAddRemove;
+        $scope.fabric.canvas.renderOnAddRemove = false;
+        _.forEach(group, function(item) {
+          return $scope.fabric.canvas.add(item);
+        });
+        $scope.fabric.canvas.renderOnAddRemove = origRenderOnAddRemove;
+        $scope.fabric.canvas.renderAll();
+        return em.unit;
+      });
+      $scope.annotations.unshift(annotationGroup);
+      return em.unit;
+    });
+    $scope.$on('socket:removeAnnotationResponse', function(e, id) {
+      var clientCopy;
+      clientCopy = _.findWhere($scope.annotations, {
+        id: id
+      });
+      console.log('trying to remove this: ', clientCopy);
+      _.forEach(clientCopy.group, function(item) {
+        return $scope.fabric.canvas.remove(item);
+      });
+      $scope.annotations = _.without($scope.annotations, clientCopy);
+      return em.unit;
+    });
     $scope.fabric.canvas.on('mouse:down', function(e) {
       var pointer, _ref;
       pointer = $scope.fabric.canvas.getPointer(e.e);

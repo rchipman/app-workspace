@@ -5,7 +5,8 @@ Workspace.controller 'AnnotationDetailsCtrl',
 ($rootScope, $scope, $stateParams, $timeout, annotationService, fabricJsService, annotationSocket) ->
 
 	$rootScope.$broadcast 'navigatedTo', 'Annotations'
-	annotationSocket.forward 'newCommentAddedResponse', $scope
+	annotationSocket.forward 'updateAnnotationResponse', $scope
+	annotationSocket.forward 'removeAnnotationResponse', $scope
 
 	###
 	INITIALIZE CANVAS
@@ -440,9 +441,8 @@ Workspace.controller 'AnnotationDetailsCtrl',
 	readyToComment = () ->
 		$scope.readyToComment = true
 		$scope.fabric.canvas.isDrawingMode = false
-		pin = commentPin()
-		$scope.fabric.canvas.add pin
-		$scope.currentAnnotationGroup.push pin
+		# Let's make the pin after we get the objects back from the server
+
 		$timeout (() ->
 			$('#user-comment-input').focus()
 			em.unit
@@ -452,6 +452,9 @@ Workspace.controller 'AnnotationDetailsCtrl',
 		em.unit
 
 	$scope.addComment = () ->
+		pin = commentPin()
+		$scope.fabric.canvas.add pin
+		$scope.currentAnnotationGroup.push pin
 		annotationSpec =
 			id: $scope.currentAnnotationIndex++
 			group: $scope.currentAnnotationGroup
@@ -471,33 +474,33 @@ Workspace.controller 'AnnotationDetailsCtrl',
 		$scope.left = null
 		$scope.top = null
 		# annotationSpec object describing individual annotation group is pushed to socket
-		annotationSocket.emit 'newCommentAdded', $scope.fabric.canvas.toJSON()
+		annotationSocket.emit 'updateAnnotation', JSON.stringify annotationSpec
 		em.unit
 
 	$scope.removeComment = (annotationid) ->
-		currentAnnotation = _.findWhere $scope.annotations, id: annotationid
-		_.forEach currentAnnotation.group, (item) ->
+		annotationToRemove = _.findWhere $scope.annotations, id: annotationid
+
+		# send request to server to remove annotation by id
+		annotationSocket.emit 'removeAnnotation', annotationid
+
+		# remove all local objects from canvas
+		_.forEach annotationToRemove.group, (item) ->
 			$scope.fabric.canvas.remove item
-		$scope.annotations = _.without $scope.annotations, currentAnnotation
+
+		# reset annotations model to remove comments from comment panel
+		$scope.annotations = _.without $scope.annotations, annotationToRemove
 		em.unit
 
 	$scope.cancelComment = () ->
 		_.forEach $scope.currentAnnotationGroup, (item) ->
 			$scope.fabric.canvas.remove item
 		$scope.readyToComment = false
+		$scope.newCommentText = null
+		$scope.currentAnnotationGroup = []
 		$('.upper-canvas').css({'background':'none'})
 		em.unit
 
-	# Server raised events
-	$scope.$on 'socket:newCommentAddedResponse', (e, data) ->
-		# the data object is now the JSONified canvas, let's rebuild
-		# if this works, at least we know we can update the canvas, though this probably screws up anyone
-		# who is currently annotating
-		# adding individual changes instead of refreshing the canvas is ideal
-		$scope.fabric.canvas.clear()
-		$scope.fabric.canvas.loadFromJSON data
-		# $scope.annotations.push data
-		em.unit
+
 
 	###
 	Because of fabric.js quirks with object addition (on addition to the canvas, the object is mutated to a state where it cannot be added again)
@@ -516,6 +519,40 @@ Workspace.controller 'AnnotationDetailsCtrl',
 	###
 	FABRIC CANVAS EVENT HANDLERS
 	###
+
+	# Server raised events
+	$scope.$on 'socket:updateAnnotationResponse', (e, data) ->
+		# the data object is now the JSONified annotationSpec, let's rebuild
+		# if this works, at least we know we can update the canvas, though this probably screws up anyone
+		# who is currently annotating
+
+		annotationGroup = JSON.parse data
+
+		# reset annotation index to make sure no dupes
+		annotationGroup.id = $scope.currentAnnotationIndex++
+
+		fabric.util.enlivenObjects annotationGroup.group, (group) ->
+			origRenderOnAddRemove = $scope.fabric.canvas.renderOnAddRemove
+			# looks like we have to change this canvas setting so the errors don't kill us
+			$scope.fabric.canvas.renderOnAddRemove = false
+			_.forEach group, (item) ->
+				$scope.fabric.canvas.add item
+			$scope.fabric.canvas.renderOnAddRemove = origRenderOnAddRemove
+			$scope.fabric.canvas.renderAll()
+			em.unit
+		$scope.annotations.unshift annotationGroup
+		em.unit
+
+	$scope.$on 'socket:removeAnnotationResponse', (e, id) ->
+		# id here is just the annotation id to remove
+		# check annotations model to find all of the moving parts
+		clientCopy = _.findWhere $scope.annotations, id: id
+		console.log 'trying to remove this: ', clientCopy
+		_.forEach clientCopy.group, (item) ->
+			$scope.fabric.canvas.remove item
+		$scope.annotations = _.without $scope.annotations, clientCopy
+		em.unit
+
 
 	$scope.fabric.canvas.on 'mouse:down', (e) ->
 		pointer = $scope.fabric.canvas.getPointer e.e

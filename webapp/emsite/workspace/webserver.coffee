@@ -36,18 +36,28 @@ io.on 'connection', (socket) ->
 	# ...
 	# when the user connects, client needs to ask server for proper state
 	# ...
-		socket.on 'newCommentAdded', (data) ->
-			console.log "got some data"
-			# Make sure that this is variable based on the current annotation, otherwise
-			# we get broadcasts that get consumed by aLL annotations, not just the
-			# one we are looking at. Which is bad.
-			# i.e. "newCommentAddedResponse#{$scope.currentAnnotation.annotation.id}"
+	socket.on 'updateAnnotation', (data) ->
+		# this listener must act as an interloper between
+		# the local client canvas app and all connected clients
+		# this ensures that no changes are actually made locally
+		# without first asking the server and pushing those
+		# changes to all connected clients so no race conditions
+		# can exist with user editing
+		console.log 'updateAnnotation'
+		socket.broadcast.emit 'updateAnnotationResponse', data
+		# this should pass the annotation object with any modifications necessary
+		# any updates to the client can be done upon response, such that all clients are equal
 
-			# data = the object passed from AnnotationDetailsCtrl annotationSocket.emit
-
-			socket.broadcast.emit 'newCommentAddedResponse', data
-			em.unit
 		em.unit
+
+	socket.on 'removeAnnotation', (data) ->
+
+		console.log 'removeAnnotation'
+		socket.broadcast.emit 'removeAnnotationResponse', data
+		# this event handles telling the clients that a comment was removed
+		# therefore the clients can remove the necessary objects and update annotations model
+		em.unit
+
 	em.unit
 
 http.listen 3000, () ->
