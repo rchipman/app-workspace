@@ -1,11 +1,5 @@
 <ul class="nav nav-sidebar">
-    <li>
-        <a ui-sref="app.collaborations">Collaborations</a>
-       <!--  <ul class="nav nav-sidebar">
-            <li><a href="#">Second Level</a></li>
-            <li><a href="#">Second Level</a></li>
-            <li><a href="#">Second Level</a></li>
-            <li><a href="#">Second Level</a></li>
-        </ul> -->
+    <li ng-repeat="nav in navigation" ng-class="{'active': nav.name == currentLocationName}">
+        <a ui-sref="app.{{nav.state}}">{{nav.name}}</a>
     </li>
 </ul>
