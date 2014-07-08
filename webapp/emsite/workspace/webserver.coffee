@@ -34,14 +34,19 @@ io = require('socket.io') http
 
 io.on 'connection', (socket) ->
 	# this function catches the emit of 'test socket' from the annotation details controller
-  	socket.on 'test socket', (msg) ->
-    	console.log "message: #{msg}"
-    	em.unit
-    em.unit
+		socket.on 'newCommentAdded', (data) ->
+			console.log "got some data"
+			# Make sure that this is variable based on the current annotation, otherwise
+			# we get broadcasts that get consumed by aLL annotations, not just the
+			# one we are looking at. Which is bad.
+			socket.broadcast.emit 'newCommentAddedResponse', data
+			em.unit
+		em.unit
+	em.unit
 
 http.listen 3000, () ->
-  console.log 'listening on *:3000'
-  em.unit
+	console.log 'listening on *:3000'
+	em.unit
 
 
 # # new stuff for possible node-fabric synergy with JSON
