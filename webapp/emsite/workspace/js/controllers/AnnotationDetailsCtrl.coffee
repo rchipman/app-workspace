@@ -5,27 +5,77 @@ Workspace.controller 'AnnotationDetailsCtrl',
 ($rootScope, $scope, $stateParams, $timeout, annotationService, fabricJsService, annotationSocket) ->
 
 	$rootScope.$broadcast 'navigatedTo', 'Annotations'
-	annotationSocket.forward('newCommentAddedResponse', $scope);
+	annotationSocket.forward 'newCommentAddedResponse', $scope
 
+	###
+	INITIALIZE CANVAS
+	###
+
+	$scope.currentAnnotation = _.find annotationService.mockData,
+	(item) ->
+		item.annotation.id is parseInt $stateParams.annotationID
+	# uses init function to create the fabric environment
+	$scope.fabric = fabricJsService.init $scope.currentAnnotation.annotation.path
+
+	###
+	/ INITIALIZE CANVAS
+	###
 
 	$scope.selectable = false
 	$scope.canSelect = () -> $scope.selectable
 	$scope.colorpicker =
-		hex: '#ddd'
+		hex: '#000fff'
 	$scope.brushWidth = 5
-	$scope.mouseDown = null # look I defined this here in the controller, this is probably bad !!!
+	$scope.mouseDown = null
 	$scope.left = 0 # !!!
 	$scope.top = 0 # !!!
-	$scope.currentCommentIndex = 1 # should probably be deprecated to have annotation index tied to comment index
+	$scope.currentAnnotationIndex = 1 # should probably be deprecated to have annotation index tied to comment index
 	$scope.newCommentText = null
 	$scope.annotations = []	# holds all annotation groups (should be one per unique annotation w/ comment)
+	usefulKeys = ['']			# i dunno
+	$scope.eventIndex = 0
+	$scope.annotationAction = null
+	$scope.currentAnnotationGroup = []
+	$scope.currentAnnotationGroupId = 0
+
+	###
+	USER AUTHENTICATION LOGIC
+	###
+
+	# check validity of user object and do whatever necessary if not authenticated
+
+	# if not metaUser.authenticated
+
 	metaUser =
 		type: 'normal'
 		name: 'Rob'
 		email: md5 'jrchipman1@gmail.com'
 
 	$scope.currentUser = metaUser
-	$scope.shapeToolType = 'circle'
+
+	$.getJSON '/entermedia/services/json/users/status.json', (data) ->
+			$scope.currentUser = data
+
+	# $scope.getUser = () ->
+	# 	console.log 'We are actually clicking this button'
+	# 	# console.log $.getJSON '/entermedia/services/json/users/status.json', (data) ->
+	# 	# 	alert data
+	# 	$.ajax {
+	# 		type: "GET"
+	# 		url: '/entermedia/services/json/users/status.json'
+	# 		success: (data) ->
+	# 			alert data
+	# 			em.unit
+	# 		,
+	# 		failure: (errMsg) ->
+	# 			alert errMsg
+	# 			em.unit
+	# 	}
+	# 	em.unit
+
+	###
+	/ USER AUTHENTICATION LOGIC
+	###
 
 	$scope.thumbs = [
 		{ name: 'Maybe Art', src: 'img/BlueBus.jpg', id: 104 }
@@ -33,6 +83,10 @@ Workspace.controller 'AnnotationDetailsCtrl',
 		{ name: 'Nice Art', src: 'img/FenceDog.jpg', id: 102 }
 		{ name: 'Great Art', src: 'img/TigerTug.jpg', id: 103 }
 	]
+
+	###
+	FABRIC TOOLS SETUP
+	###
 
 	getSelf = (name) ->
 		_.find(toolkit, name: name)
@@ -202,11 +256,23 @@ Workspace.controller 'AnnotationDetailsCtrl',
 				}
 	]
 
+	$scope.fabric.toolkit = toolkit # in case it needs to be accessible from other controllers
+
+	###
+	/ FABRIC TOOLS SETUP
+	###
+
 
 	$scope.testSocket = () ->
 		# emit the 'test socket' event to be heard by the listener
 
 		em.unit
+
+	###
+	JSON IMPORT/EXPORT LOGIC
+	###
+
+	applicationid = "/emsite/workspace"	
 
 	$scope.loadImages = () ->
 		markers = {
@@ -258,6 +324,30 @@ Workspace.controller 'AnnotationDetailsCtrl',
 			}
 		em.unit
 
+	$scope.exportCanvas = () ->
+		$.ajax {
+			type: "POST"
+			url: "#{applicationid}/services/json/search/data/annotation?save=true&field=annotationid&annotationid.value=#{$scope.currentAnnotation.annotation.id}"
+			success: (data) ->
+				$.each data.results, (index, obj) ->
+					console.log 'success'
+				em.unit
+			,
+			failure: (errMsg) ->
+				alert errMsg
+				em.unit
+			}
+		em.unit
+
+	###
+	/ JSON IMPORT/EXPORT LOGIC
+	###
+
+	###
+	TOOLBAR SELECTOR METHODS
+	###
+
+	$scope.shapeToolType = 'circle' # initialize shape selector to a valid state
 
 	$scope.selectTool = (toolname) ->
 		if not $scope.readyToComment
@@ -289,18 +379,6 @@ Workspace.controller 'AnnotationDetailsCtrl',
 	# $scope.getRejections =
 	# () ->
 	# 	(user for user of $scope.approvalHash when $scope.approvalHash[user] is false)
-	usefulKeys = ['']			# i dunno
-	$scope.currentAnnotation = _.find annotationService.mockData,
-	(item) ->
-		item.annotation.id is parseInt $stateParams.annotationID
-	# uses init function to create the fabric environment
-	$scope.fabric = fabricJsService.init $scope.currentAnnotation.annotation.path
-	$scope.fabric.toolkit = toolkit
-	$scope.selectTool 'draw'
-	$scope.eventIndex = 0
-	$scope.annotationAction = null
-	$scope.currentAnnotationGroup = []
-	$scope.currentAnnotationGroupId = 0
 	# _.contains(array, entry) -> bool is entry in array
 	###
 	This whole process is muddled, what should happen is simple:
@@ -321,6 +399,12 @@ Workspace.controller 'AnnotationDetailsCtrl',
 			$scope.currentTool.type = fabric.Rect
 		em.unit
 
+	$scope.selectTool 'disabled' # initialize state with no editing option selected
+
+	###
+	/ TOOLBAR SELECTOR METHODS
+	###
+
 	commentPin = () ->
 		# this needs to be fixed to use a properly bordered circle instead of two circles
 		new fabric.Group [
@@ -336,7 +420,7 @@ Workspace.controller 'AnnotationDetailsCtrl',
 				left: 5
 			})
 			,
-			new fabric.Text $scope.currentCommentIndex.toString(),
+			new fabric.Text $scope.currentAnnotationIndex.toString(),
 				{
 					fontSize: 20
 					fill: "#fff"
@@ -369,7 +453,7 @@ Workspace.controller 'AnnotationDetailsCtrl',
 
 	$scope.addComment = () ->
 		annotationSpec =
-			id: $scope.currentCommentIndex++
+			id: $scope.currentAnnotationIndex++
 			group: $scope.currentAnnotationGroup
 			user: $scope.currentUser
 			comment:
@@ -386,7 +470,8 @@ Workspace.controller 'AnnotationDetailsCtrl',
 		$('.upper-canvas').css({'background':'none'})
 		$scope.left = null
 		$scope.top = null
-		annotationSocket.emit 'newCommentAdded', annotationSpec
+		# annotationSpec object describing individual annotation group is pushed to socket
+		annotationSocket.emit 'newCommentAdded', $scope.fabric.canvas.toJSON()
 		em.unit
 
 	$scope.removeComment = (annotationid) ->
@@ -405,32 +490,57 @@ Workspace.controller 'AnnotationDetailsCtrl',
 
 	# Server raised events
 	$scope.$on 'socket:newCommentAddedResponse', (e, data) ->
-		# add the annotation group to the canvas
-		# add the comment to the comment array
-		# $scope.fabric.canvas.add item for item in data.group
-		console.log 'data group: ', data.group
-		$scope.annotations.push data
+		# the data object is now the JSONified canvas, let's rebuild
+		# if this works, at least we know we can update the canvas, though this probably screws up anyone
+		# who is currently annotating
+		# adding individual changes instead of refreshing the canvas is ideal
+		$scope.fabric.canvas.clear()
+		$scope.fabric.canvas.loadFromJSON data
+		# $scope.annotations.push data
 		em.unit
 
+	###
+	Because of fabric.js quirks with object addition (on addition to the canvas, the object is mutated to a state where it cannot be added again)
+	the logic for transmitting the state of the canvas must not rely on the ability to pass the objects
+	Luckily, Fabric.js includes handy toJSON and loadFromJSON methods that can send the entire canvas object
+	All we need to do is attach the information we need to that object and let our data be transmitted along with the canvas
+	Then we can load the canvas, let fabric do all of its logic, and insert our own data into hte current $scope when it is finished
+	This may cause complications with being able to track the comments, because the efforts to link annotation with comment
+	will be thwarted using this method of canvas transport.  This also means that large annotations may be slow to load
+	since the process involves completely destroying and rebuilding the entire canvas
+
+	It also remains to be seen if attributes added to the canvas object will still be populated on the loaded canvas (don't see why not)
+
+	###
+
+	###
+	FABRIC CANVAS EVENT HANDLERS
+	###
+
 	$scope.fabric.canvas.on 'mouse:down', (e) ->
-		console.log 'click location: ', e.e
-		$scope.mouseDown = true
-		if $scope.annotationAction isnt null
-			$timeout.cancel $scope.annotationAction
 		pointer = $scope.fabric.canvas.getPointer e.e
-		if $scope.currentTool.name is 'comment'
-			$scope.left = pointer.x
-			$scope.top = pointer.y
+		$scope.mouseDown = true
+		$scope.left = pointer.x
+		$scope.top = pointer.y
 		if not $scope.readyToComment
+			if $scope.annotationAction isnt null
+				console.log 'canceling annotationAction'
+				$timeout.cancel $scope.annotationAction
+				# $scope.annotationAction = null
+			# if $scope.currentTool.name is 'comment'
+			# 	$scope.left = pointer.x
+			# 	$scope.top = pointer.y
 			$scope.currentTool.events?.mousedown? e, $scope.fabric.canvas
 		em.unit
 
 	$scope.fabric.canvas.on 'mouse:up', (e) ->
 		$scope.mouseDown = false
-		if $scope.currentTool.annotating
+		if $scope.currentTool.annotating and not $scope.readyToComment
 			if $scope.currentTool.name is 'comment'
+				console.log 'Calling readyToComment() now'
 				readyToComment()
 			else
+				console.log 'Calling delayed readyToComment()'
 				$scope.annotationAction = $timeout readyToComment, 1000
 		$scope.currentTool.events?.mouseup? e, $scope.fabric.canvas
 		em.unit
@@ -441,14 +551,18 @@ Workspace.controller 'AnnotationDetailsCtrl',
 
 	$scope.fabric.canvas.on 'object:added', (obj) ->
 		if $scope.currentTool.annotating
-			obj.target.selectable = $scope.canSelect()
+			obj.target.selectable = $scope.canSelect() # this likely does not work anymore
 			$scope.currentAnnotationGroup.push obj.target
 		$scope.currentTool.events?.objectadded? obj, $scope.fabric.canvas
 		# this may not be the best place for these, but it needs to happen somewhat regularly
-		$scope.fabric.canvas.renderAll()
 		$scope.fabric.canvas.calcOffset()
+		$scope.fabric.canvas.renderAll()
 		$scope.left = obj.target.left if !$scope.left
 		$scope.top = obj.target.top if !$scope.top
 		em.unit
 	em.unit
+
+	###
+	/ FABRIC CANVAS EVENT HANDLERS
+	###
 ]

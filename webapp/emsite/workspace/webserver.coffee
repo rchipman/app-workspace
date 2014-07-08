@@ -33,12 +33,18 @@ io = require('socket.io') http
 #   em.unit
 
 io.on 'connection', (socket) ->
-	# this function catches the emit of 'test socket' from the annotation details controller
+	# ...
+	# when the user connects, client needs to ask server for proper state
+	# ...
 		socket.on 'newCommentAdded', (data) ->
 			console.log "got some data"
 			# Make sure that this is variable based on the current annotation, otherwise
 			# we get broadcasts that get consumed by aLL annotations, not just the
 			# one we are looking at. Which is bad.
+			# i.e. "newCommentAddedResponse#{$scope.currentAnnotation.annotation.id}"
+
+			# data = the object passed from AnnotationDetailsCtrl annotationSocket.emit
+
 			socket.broadcast.emit 'newCommentAddedResponse', data
 			em.unit
 		em.unit

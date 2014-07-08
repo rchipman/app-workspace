@@ -36,12 +36,12 @@
         <li ng-click="selectTool('comment')" ng-class="{ 'active': currentTool.name == 'comment' }">
             <svg class="icon icon-comment" viewBox="0 0 32 32"><use xlink:href="#icon-comment"></use></svg>
         </li>
-        <li ng-click="testSocket()">
+        <li ng-click="exportCanvas()">
             <svg class="icon icon-load-images" viewBox="0 0 32 32"><use xlink:href="#icon-load-images"></use></svg>
         </li>
         <li class="last colorpicker-li">
-            <!-- <div colorpicker colorpicker-position="bottom" ng-model="colorpicker.he" colorpicker class="clearfix">tes</div> -->
-            <svg fill="{{color}}" class="icon icon-colorpicker" viewBox="0 0 32 32"><use xlink:href="#icon-colorpicker"></use></svg>
+            <div colorpicker colorpicker-position="bottom" ng-model="colorpicker.hex" colorpicker class="clearfix">
+            <svg fill="{{colorpicker.hex}}" class="icon icon-colorpicker" viewBox="0 0 32 32"><use xlink:href="#icon-colorpicker"></use></svg></div>
         </li>
 
         <!--
