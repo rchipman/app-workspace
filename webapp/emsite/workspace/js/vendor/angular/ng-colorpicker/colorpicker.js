@@ -5,6 +5,9 @@ angular.module('colorpicker.module', [])
       return {
         closestSlider: function (elem) {
           var matchesSelector = elem.matches || elem.webkitMatchesSelector || elem.mozMatchesSelector || elem.msMatchesSelector;
+          if (matchesSelector == undefined) {
+              return null;
+          }
           if (matchesSelector.bind(elem)('I')) {
             return elem.parentNode;
           }

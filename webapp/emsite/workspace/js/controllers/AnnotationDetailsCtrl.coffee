@@ -1,8 +1,10 @@
 # working js file is located at AnnotationDetailsCtrl_orig.js
 # this is a buggy CoffeeScript
 Workspace.controller 'AnnotationDetailsCtrl',
-['$rootScope', '$scope', '$stateParams', '$timeout', 'annotationService', 'fabricJsService', 'annotationSocket',
-($rootScope, $scope, $stateParams, $timeout, annotationService, fabricJsService, annotationSocket) ->
+['$rootScope', '$scope', '$stateParams', '$timeout', 'annotationService',
+'fabricJsService', 'annotationSocket', 'AnnotationApi',
+($rootScope, $scope, $stateParams, $timeout, annotationService,
+fabricJsService, annotationSocket, annotationApi) ->
 
 	$rootScope.$broadcast 'navigatedTo', 'Annotations'
 	annotationSocket.forward 'updateAnnotationResponse', $scope
@@ -272,7 +274,7 @@ Workspace.controller 'AnnotationDetailsCtrl',
 	JSON IMPORT/EXPORT LOGIC
 	###
 
-	applicationid = "/emsite/workspace"	
+	applicationid = "/emsite/workspace"
 
 	$scope.loadImages = () ->
 		markers = {

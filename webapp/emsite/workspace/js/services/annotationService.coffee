@@ -1,4 +1,4 @@
-Workspace.factory 'annotationService', 
+Workspace.factory 'annotationService',
 () ->
   data = [
     project:
@@ -57,5 +57,5 @@ Workspace.factory 'annotationService',
       owner: 'Fred Dole'
       path: 'img/BlueBus.jpg'
   ]
-   
+
   mockData: data
